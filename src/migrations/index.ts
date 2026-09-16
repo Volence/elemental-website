@@ -3,6 +3,7 @@ import * as migration_20260904_production_schedule_post from "./20260904_product
 import * as migration_20260907_production_roles_multi from "./20260907_production_roles_multi";
 import * as migration_20260907_production_roles_drop_columns from "./20260907_production_roles_drop_columns";
 import * as migration_20260908_availability_calendar_drift from "./20260908_availability_calendar_drift";
+import * as migration_20260916_stream_announce from "./20260916_stream_announce";
 import * as migration_20260904_teams_faceit_withdrawn from "./20260904_teams_faceit_withdrawn";
 import * as migration_20251218_130100 from "./20251218_130100";
 import * as migration_20251222_190839_add_recruitment_collections from "./20251222_190839_add_recruitment_collections";
@@ -329,5 +330,10 @@ export const migrations = [
     up: migration_20260908_availability_calendar_drift.up,
     down: migration_20260908_availability_calendar_drift.down,
     name: "20260908_availability_calendar_drift",
+  },
+  {
+    up: migration_20260916_stream_announce.up,
+    down: migration_20260916_stream_announce.down,
+    name: "20260916_stream_announce",
   },
 ];

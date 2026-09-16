@@ -5342,6 +5342,20 @@ export interface ProductionDashboard {
    * Discord channel that receives the public weekly broadcast schedule.
    */
   schedulePublicChannelId?: string | null;
+  /**
+   * Offered when someone presses Announce on the staff schedule post. The announcement goes to the announcements channel above.
+   */
+  streamChannels?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Discord role pinged by stream announcements (the Stream Ping role). Leave empty to use the default.
+   */
+  streamPingRoleId?: string | null;
   schedulePost?: {
     staffMessageIds?: string | null;
     publicMessageIds?: string | null;
@@ -5613,6 +5627,14 @@ export interface FooterSelect<T extends boolean = true> {
 export interface ProductionDashboardSelect<T extends boolean = true> {
   scheduleStaffChannelId?: T;
   schedulePublicChannelId?: T;
+  streamChannels?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  streamPingRoleId?: T;
   schedulePost?:
     | T
     | {

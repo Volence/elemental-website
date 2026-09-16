@@ -6,6 +6,8 @@ import {
   splitAtBoundaries,
   schedulePostRelevantChange,
   scheduleMatchesWhere,
+  announceButtonLabel,
+  formatStreamAnnouncement,
   type ScheduleMatch,
 } from '@/utilities/productionSchedulePost'
 
@@ -238,5 +240,41 @@ describe('buildSchedulePosts', () => {
     const posts = buildSchedulePosts(many, { mentionStyle: 'discord' })
     expect(posts.public.length).toBeGreaterThan(1)
     for (const msg of [...posts.staff, ...posts.public]) expect(msg.length).toBeLessThanOrEqual(2000)
+  })
+})
+
+describe('staff post announce buttons', () => {
+  it('records which matches land in each staff message', () => {
+    const many = Array.from({ length: 12 }, (_, i) => match({ id: 100 + i, opponent: `Opponent ${i}` }))
+    const posts = buildSchedulePosts(many, { mentionStyle: 'discord' })
+    expect(posts.staffMatchIds.length).toBe(posts.staff.length)
+    expect(posts.staffMatchIds.flat()).toEqual(many.map((m) => m.id))
+    posts.staffMatchIds.forEach((ids, i) => {
+      for (const id of ids) expect(posts.staff[i]).toContain(`Opponent ${id - 100}`)
+    })
+  })
+
+  it('has no buttons on the empty post', () => {
+    expect(buildSchedulePosts([], { mentionStyle: 'discord' }).staffMatchIds).toEqual([[]])
+  })
+
+  it('labels a button with both sides and keeps it under the Discord limit', () => {
+    expect(announceButtonLabel(match())).toBe('📣 Dragon vs Rivals')
+    const long = match({ opponent: 'x'.repeat(200) })
+    expect(announceButtonLabel(long).length).toBeLessThanOrEqual(80)
+  })
+})
+
+describe('formatStreamAnnouncement', () => {
+  it('pings the role and names the match and stream', () => {
+    expect(formatStreamAnnouncement(match(), 'https://www.twitch.tv/elmt_gg_2', '1443999024347746528')).toBe(
+      "<@&1443999024347746528> We're LIVE with ELMT Dragon vs. Rivals on https://www.twitch.tv/elmt_gg_2",
+    )
+  })
+
+  it('skips the ping when no role is set', () => {
+    expect(formatStreamAnnouncement(match(), 'https://www.twitch.tv/elmt_gg', null)).toBe(
+      "We're LIVE with ELMT Dragon vs. Rivals on https://www.twitch.tv/elmt_gg",
+    )
   })
 })

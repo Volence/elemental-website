@@ -1,7 +1,7 @@
 import { ensureDiscordClient } from '../bot'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { Message, TextChannel, ThreadChannel } from 'discord.js'
+import type { Message, MessageEditOptions, TextChannel, ThreadChannel } from 'discord.js'
 import { formatScheduleMessages, type ScheduleData } from './schedule-format'
 
 interface VoteData {
@@ -26,7 +26,7 @@ export function parseMessageIds(raw: string | null | undefined): string[] {
 export async function syncScheduleMessages(
   thread: TextChannel | ThreadChannel,
   existingIds: string[],
-  contents: string[],
+  contents: Array<string | Pick<MessageEditOptions, 'content' | 'components'>>,
 ): Promise<string[]> {
   const ids: string[] = []
   for (let i = 0; i < contents.length; i++) {
@@ -41,7 +41,7 @@ export async function syncScheduleMessages(
       }
     }
     if (!message) {
-      message = await thread.send(contents[i])
+      message = await thread.send(contents[i] as any)
     }
     ids.push(message.id)
   }

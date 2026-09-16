@@ -77,6 +77,9 @@ export function setupInteractionHandlers(): void {
         await handleAutocomplete(interaction)
       } else if (interaction.isButton()) {
         await handleButton(interaction)
+      } else if (interaction.isStringSelectMenu() && interaction.customId.startsWith('stream_announce_pick:')) {
+        const { handleStreamAnnouncePick } = await import('./streamAnnounce')
+        await handleStreamAnnouncePick(interaction)
       }
     } catch (error) {
       console.error('Error handling interaction:', error)
@@ -211,6 +214,9 @@ async function handleButton(interaction: ButtonInteraction): Promise<void> {
     default:
       if (customId.startsWith('show_more_results_') || customId.startsWith('show_more_export_')) {
         await handleShowMore(interaction)
+      } else if (customId.startsWith('stream_announce:')) {
+        const { handleStreamAnnounceButton } = await import('./streamAnnounce')
+        await handleStreamAnnounceButton(interaction)
       }
   }
 }

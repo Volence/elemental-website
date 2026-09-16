@@ -12,6 +12,12 @@ import { FACEIT_DIVISIONS, divisionFromRating } from './divisions'
 export const DISCORD_MESSAGE_LIMIT = 2000
 export const DEFAULT_LEAGUE_LABEL = 'FACEIT League'
 export const STREAM_URL = 'https://twitch.tv/elmt_gg'
+/** Used when the dashboard's stream channel list or ping role is left empty. */
+export const DEFAULT_STREAM_CHANNELS = [
+  { label: 'elmt_gg', url: 'https://www.twitch.tv/elmt_gg' },
+  { label: 'elmt_gg_2', url: 'https://www.twitch.tv/elmt_gg_2' },
+]
+export const DEFAULT_STREAM_PING_ROLE_ID = '1443999024347746528'
 const LOBBY_PLACEHOLDER = 'https://www.faceit.com/en/ow2/room/[TBD]'
 
 export interface SchedulePerson {
@@ -69,6 +75,8 @@ export interface SchedulePosts {
   staff: string[]
   public: string[]
   matchIds: number[]
+  /** For each staff message, the matches it shows, in order. Drives the announce buttons. */
+  staffMatchIds: number[][]
 }
 
 const EMPTY_STAFF = '**No matches selected for broadcast this week.**\n\nUse the checkboxes to select matches to include in the schedule.'
@@ -253,20 +261,31 @@ export function formatPublicSchedule(matches: ScheduleMatch[], opts: PublicForma
  * section. The header goes on the first message only.
  */
 export function splitAtBoundaries(header: string, sections: string[], separator: string, max = DISCORD_MESSAGE_LIMIT): string[] {
-  const messages: string[] = []
+  return packAtBoundaries(header, sections, separator, max).map((m) => m.text)
+}
+
+/** splitAtBoundaries, plus the indexes of the sections each message holds. */
+export function packAtBoundaries(
+  header: string,
+  sections: string[],
+  separator: string,
+  max = DISCORD_MESSAGE_LIMIT,
+): Array<{ text: string; sections: number[] }> {
+  const messages: Array<{ text: string; sections: number[] }> = []
   let current = header
-  let currentHasSection = false
-  for (const section of sections) {
-    const candidate = currentHasSection ? current + separator + section : current + section
-    if (candidate.length <= max || !currentHasSection) {
+  let indexes: number[] = []
+  sections.forEach((section, i) => {
+    const candidate = indexes.length > 0 ? current + separator + section : current + section
+    if (candidate.length <= max || indexes.length === 0) {
       current = candidate
-      currentHasSection = true
-      continue
+      indexes.push(i)
+      return
     }
-    messages.push(current)
+    messages.push({ text: current, sections: indexes })
     current = section
-  }
-  if (currentHasSection || messages.length === 0) messages.push(current)
+    indexes = [i]
+  })
+  if (indexes.length > 0 || messages.length === 0) messages.push({ text: current, sections: indexes })
   return messages
 }
 
@@ -323,11 +342,27 @@ export function schedulePostRelevantChange(
 export function buildSchedulePosts(matches: ScheduleMatch[], opts: StaffFormatOptions & PublicFormatOptions): SchedulePosts {
   const selected = selectedMatches(matches)
   if (selected.length === 0) {
-    return { staff: [EMPTY_STAFF], public: [EMPTY_PUBLIC], matchIds: [] }
+    return { staff: [EMPTY_STAFF], public: [EMPTY_PUBLIC], matchIds: [], staffMatchIds: [[]] }
   }
+  const staff = packAtBoundaries(STAFF_HEADER, formatStaffSections(selected, opts), STAFF_SEPARATOR)
   return {
-    staff: splitAtBoundaries(STAFF_HEADER, formatStaffSections(selected, opts), STAFF_SEPARATOR),
+    staff: staff.map((m) => m.text),
     public: splitAtBoundaries(PUBLIC_HEADER, formatPublicSections(selected, opts), '\n'),
     matchIds: selected.map((m) => m.id),
+    staffMatchIds: staff.map((m) => m.sections.map((i) => selected[i].id)),
   }
+}
+
+const BUTTON_LABEL_LIMIT = 80
+
+/** The staff post's per-match button: "📣 Dragon vs Rivals". */
+export function announceButtonLabel(match: ScheduleMatch): string {
+  const label = `📣 ${homeTeamName(match)} vs ${opponentName(match)}`
+  return label.length <= BUTTON_LABEL_LIMIT ? label : label.slice(0, BUTTON_LABEL_LIMIT - 3) + '...'
+}
+
+/** The single "we're live" post for #stream-updates, in the wording staff already use. */
+export function formatStreamAnnouncement(match: ScheduleMatch, streamUrl: string, pingRoleId: string | null | undefined): string {
+  const text = `We're LIVE with ${withOrgPrefix(homeTeamName(match))} vs. ${opponentName(match)} on ${streamUrl}`
+  return pingRoleId ? `<@&${pingRoleId}> ${text}` : text
 }

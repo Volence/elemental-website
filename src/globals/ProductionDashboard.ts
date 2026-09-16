@@ -55,6 +55,43 @@ export const ProductionDashboard: GlobalConfig = {
       },
     },
     {
+      name: 'streamChannels',
+      type: 'array',
+      label: 'Stream channels',
+      admin: {
+        description: 'Offered when someone presses Announce on the staff schedule post. The announcement goes to the announcements channel above.',
+        condition: productionLeadCondition,
+      },
+      fields: [
+        { name: 'label', type: 'text', required: true, admin: { placeholder: 'e.g. elmt_gg_2' } },
+        {
+          name: 'url',
+          type: 'text',
+          required: true,
+          admin: { placeholder: 'https://www.twitch.tv/elmt_gg_2' },
+          validate: (value: any) => {
+            if (!value) return 'URL is required'
+            if (!/^https?:\/\/\S+$/.test(value)) return 'Must be a full link starting with https://'
+            return true
+          },
+        },
+      ],
+    },
+    {
+      name: 'streamPingRoleId',
+      type: 'text',
+      label: 'Stream announcement ping role',
+      admin: {
+        description: 'Discord role pinged by stream announcements (the Stream Ping role). Leave empty to use the default.',
+        condition: productionLeadCondition,
+      },
+      validate: (value: any) => {
+        if (!value) return true
+        if (!/^\d{17,20}$/.test(value)) return 'Must be a valid Discord Role ID (17-20 digits)'
+        return true
+      },
+    },
+    {
       // Which Discord messages back the current week's schedule post. Written by
       // the schedule post service so later edits update in place. Not for hand editing.
       name: 'schedulePost',

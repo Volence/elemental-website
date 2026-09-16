@@ -1,10 +1,11 @@
 import type { Payload } from 'payload'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import type { TextChannel, ThreadChannel } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type TextChannel, type ThreadChannel } from 'discord.js'
 import { ensureDiscordClient, getDiscordClient } from '../bot'
 import { parseMessageIds, syncScheduleMessages } from '../handlers/publish-schedule'
 import {
+  announceButtonLabel,
   buildSchedulePosts,
   scheduleMatchesWhere,
   type MentionStyle,
@@ -55,6 +56,31 @@ export function readState(global: any): SchedulePostState {
     postedAt: sp.postedAt ?? null,
     postedBy: sp.postedBy ?? null,
   }
+}
+
+export const STREAM_ANNOUNCE_PREFIX = 'stream_announce:'
+
+/** Discord allows 5 rows of 5 buttons; a message never holds that many matches, but never exceed it. */
+const MAX_BUTTONS = 25
+
+/** One Announce button per match in the message, five to a row. */
+export function announceRows(matchIds: number[], matches: ScheduleMatch[]): ActionRowBuilder<ButtonBuilder>[] {
+  const byId = new Map(matches.map((m) => [m.id, m]))
+  const buttons = matchIds
+    .map((id) => byId.get(id))
+    .filter((m): m is ScheduleMatch => !!m)
+    .slice(0, MAX_BUTTONS)
+    .map((m) =>
+      new ButtonBuilder()
+        .setCustomId(`${STREAM_ANNOUNCE_PREFIX}${m.id}`)
+        .setLabel(announceButtonLabel(m))
+        .setStyle(ButtonStyle.Secondary),
+    )
+  const rows: ActionRowBuilder<ButtonBuilder>[] = []
+  for (let i = 0; i < buttons.length; i += 5) {
+    rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(buttons.slice(i, i + 5)))
+  }
+  return rows
 }
 
 export function readChannels(global: any): SchedulePostChannels {
@@ -159,7 +185,11 @@ export async function postProductionSchedule(payload: Payload, { mode, postedBy 
   let staffIds: string[] = []
   if (build.channels.staff) {
     const channel = await fetchTextChannel(build.channels.staff)
-    staffIds = await syncScheduleMessages(channel, existing.staffMessageIds, build.posts.staff)
+    const staffMessages = build.posts.staff.map((content, i) => ({
+      content,
+      components: announceRows(build.posts.staffMatchIds[i] ?? [], build.matches),
+    }))
+    staffIds = await syncScheduleMessages(channel, existing.staffMessageIds, staffMessages)
   }
 
   let publicIds: string[] = []

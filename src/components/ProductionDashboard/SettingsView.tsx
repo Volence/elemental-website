@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Bell, Plus, Trash2, Save, Check, Loader2, AlertCircle, Hash, Send } from 'lucide-react'
+import { Bell, Plus, Trash2, Save, Check, Loader2, AlertCircle, Hash, Send, Radio } from 'lucide-react'
 
 type ChannelEntry = {
   id?: string
@@ -9,12 +9,27 @@ type ChannelEntry = {
   label: string
 }
 
+type StreamChannel = {
+  id?: string
+  label: string
+  url: string
+}
+
 const CHANNEL_ID_RE = /^\d{17,20}$/
+const URL_RE = /^https?:\/\/\S+$/
+
+const inputStyle: React.CSSProperties = {
+  padding: '0.4rem 0.6rem', fontSize: '0.8rem',
+  background: 'var(--theme-elevation-0)', border: '1px solid var(--theme-elevation-200)',
+  borderRadius: '4px', color: 'var(--theme-text)',
+}
 
 export function SettingsView() {
   const [channels, setChannels] = useState<ChannelEntry[]>([])
   const [scheduleStaffChannelId, setScheduleStaffChannelId] = useState('')
   const [schedulePublicChannelId, setSchedulePublicChannelId] = useState('')
+  const [streamChannels, setStreamChannels] = useState<StreamChannel[]>([])
+  const [streamPingRoleId, setStreamPingRoleId] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle')
@@ -28,6 +43,8 @@ export function SettingsView() {
       setChannels(data.rescheduleNotificationChannels ?? [])
       setScheduleStaffChannelId(data.scheduleStaffChannelId ?? '')
       setSchedulePublicChannelId(data.schedulePublicChannelId ?? '')
+      setStreamChannels(data.streamChannels ?? [])
+      setStreamPingRoleId(data.streamPingRoleId ?? '')
     } catch (err) {
       console.error('Settings load error:', err)
     } finally {
@@ -58,6 +75,20 @@ export function SettingsView() {
       setSaveStatus('error')
       return
     }
+    const pingRoleId = streamPingRoleId.trim()
+    if (pingRoleId && !CHANNEL_ID_RE.test(pingRoleId)) {
+      setErrorMsg('The ping role ID must be 17-20 digits')
+      setSaveStatus('error')
+      return
+    }
+    const validStreams = streamChannels
+      .map(sc => ({ ...sc, label: sc.label.trim(), url: sc.url.trim() }))
+      .filter(sc => sc.label || sc.url)
+    if (validStreams.some(sc => !sc.label || !URL_RE.test(sc.url))) {
+      setErrorMsg('Each stream needs a name and a full https:// link')
+      setSaveStatus('error')
+      return
+    }
 
     // Filter out empty rows
     const validChannels = channels.filter(ch => ch.channelId && ch.label)
@@ -71,6 +102,8 @@ export function SettingsView() {
         body: JSON.stringify({
           scheduleStaffChannelId: scheduleIds[0] || null,
           schedulePublicChannelId: scheduleIds[1] || null,
+          streamPingRoleId: pingRoleId || null,
+          streamChannels: validStreams,
           rescheduleNotificationChannels: validChannels.map((ch, idx) => ({
             ...ch,
             // Bypass Payload 3 Postgres ID mismatch bug: if no ID exists, Payload tries to 
@@ -87,6 +120,7 @@ export function SettingsView() {
       }
       const data = await res.json()
       setChannels(data.result?.rescheduleNotificationChannels ?? validChannels)
+      setStreamChannels(data.result?.streamChannels ?? validStreams)
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus('idle'), 2500)
     } catch (err: any) {
@@ -156,6 +190,96 @@ export function SettingsView() {
                 }}
               />
             </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Stream announcements */}
+      <div style={{
+        background: 'var(--theme-elevation-50)',
+        border: '1px solid var(--theme-elevation-150)',
+        borderRadius: '8px',
+        padding: '1.25rem',
+        marginBottom: '1rem',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '0.75rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--theme-text)', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Radio size={16} /> Stream Announcements
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--theme-elevation-500)', margin: 0 }}>
+              The Announce buttons on the staff post offer these streams, then post &quot;We&apos;re LIVE&quot; to the announcements channel with this role pinged.
+            </p>
+          </div>
+          <button
+            onClick={() => setStreamChannels(prev => [...prev, { label: '', url: '' }])}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0,
+              padding: '0.4rem 0.75rem', fontSize: '0.8rem', fontWeight: 500,
+              background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)',
+              borderRadius: '6px', color: '#06b6d4', cursor: 'pointer',
+            }}
+          >
+            <Plus size={14} /> Add Stream
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label style={{
+            display: 'flex', gap: '0.5rem', alignItems: 'center',
+            padding: '0.5rem 0.75rem',
+            background: 'var(--theme-elevation-100)',
+            border: '1px solid var(--theme-elevation-150)',
+            borderRadius: '6px',
+          }}>
+            <Bell size={14} style={{ opacity: 0.4, flexShrink: 0 }} />
+            <span style={{ flex: 1, fontSize: '0.8rem', color: 'var(--theme-text)' }}>Ping role ID (empty uses Stream Ping)</span>
+            <input
+              type="text"
+              value={streamPingRoleId}
+              onChange={(e) => setStreamPingRoleId(e.target.value)}
+              placeholder="Role ID"
+              style={{ ...inputStyle, flex: '0 0 220px', fontFamily: 'monospace' }}
+            />
+          </label>
+          {streamChannels.length === 0 && (
+            <div style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--theme-elevation-500)' }}>
+              No streams listed. Announce will offer elmt_gg and elmt_gg_2.
+            </div>
+          )}
+          {streamChannels.map((sc, i) => (
+            <div key={sc.id ?? `new-${i}`} style={{
+              display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap',
+              padding: '0.5rem 0.75rem',
+              background: 'var(--theme-elevation-100)',
+              border: '1px solid var(--theme-elevation-150)',
+              borderRadius: '6px',
+            }}>
+              <input
+                type="text"
+                value={sc.label}
+                onChange={(e) => setStreamChannels(prev => prev.map((x, j) => j === i ? { ...x, label: e.target.value } : x))}
+                placeholder="Name (e.g. elmt_gg_2)"
+                style={{ ...inputStyle, flex: '0 0 160px' }}
+              />
+              <input
+                type="text"
+                value={sc.url}
+                onChange={(e) => setStreamChannels(prev => prev.map((x, j) => j === i ? { ...x, url: e.target.value } : x))}
+                placeholder="https://www.twitch.tv/elmt_gg_2"
+                style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+              />
+              <button
+                onClick={() => setStreamChannels(prev => prev.filter((_, j) => j !== i))}
+                style={{
+                  padding: '0.3rem', background: 'none', border: 'none',
+                  color: 'var(--theme-elevation-400)', cursor: 'pointer',
+                  borderRadius: '4px', flexShrink: 0,
+                }}
+                title="Remove stream"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           ))}
         </div>
       </div>
@@ -261,7 +385,7 @@ export function SettingsView() {
           >
             {saving ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
               : saveStatus === 'saved' ? <><Check size={14} /> Saved!</>
-              : <><Save size={14} /> Save Channels</>}
+              : <><Save size={14} /> Save Settings</>}
           </button>
           {saveStatus === 'error' && errorMsg && (
             <span style={{ fontSize: '0.8rem', color: '#f87171', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
