@@ -325,7 +325,13 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
       if (canEditProfileFields) {
         payload.name = name
         payload.slug = slug
-        payload.discordId = discordId || null
+        // Accept a pasted mention (<@123...>) or stray spaces; anything else that is not an ID
+        // is caught here with a clear message rather than a generic server error.
+        const cleanDiscordId = discordId.trim().replace(/^<@!?(\d+)>$/, '$1')
+        if (cleanDiscordId && !/^\d{17,19}$/.test(cleanDiscordId)) {
+          throw new Error('Discord ID must be the 17-19 digit number (Discord: right-click the user > Copy User ID), not a username. Leave it empty if unknown.')
+        }
+        payload.discordId = cleanDiscordId || null
         payload.showInLiveStreamers = liveRosterApproved
         payload.gameAliases = gameAliases.filter(a => a.alias.trim())
         payload.notes = notes || null
@@ -376,7 +382,11 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.errors?.[0]?.message ?? 'Failed to save')
+        // Field errors carry the real reason one level down ("Discord ID must be 17-19 digits");
+        // the top-level message is only "The following field is invalid: ...".
+        const first = err.errors?.[0]
+        const field = first?.data?.errors?.[0]
+        throw new Error(field?.message ? `${field.label ? `${field.label}: ` : ''}${field.message}` : first?.message ?? 'Failed to save')
       }
 
       // Update local person state with saved name for header display
@@ -957,7 +967,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                 </div>
                 <div style={styles.editableField}>
                   <label style={styles.fieldLabel}>Discord ID</label>
-                  <input className="profile-input" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID" />
+                  <input className="profile-input" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID (not a username)" />
                 </div>
                 <div style={{ ...styles.readonlyField, justifyContent: 'space-between' }}>
                   <div>
