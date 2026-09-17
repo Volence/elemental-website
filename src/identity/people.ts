@@ -12,10 +12,13 @@ export interface PersonRow {
   role: string | null
   isInactive: boolean
   hash?: string | null
+  /** 'alt' when the person was found through one of their other Discord accounts. */
+  matchedVia?: 'primary' | 'alt'
 }
 
-function toRow(doc: any): PersonRow {
+function toRow(doc: any, matchedVia: 'primary' | 'alt' = 'primary'): PersonRow {
   return {
+    matchedVia,
     id: doc.id,
     name: doc.name,
     email: doc.email ?? null,
@@ -34,9 +37,38 @@ export function discordNamesOf(profile: { username: string; displayName: string;
   return [profile.username, profile.displayName, profile.nickname ?? ''].filter(Boolean)
 }
 
+/**
+ * The profile that signs in with this Discord account: the one that holds the ID, or else the one
+ * listing it among its other Discord accounts. People with two Discord accounts would otherwise
+ * get a brand new profile every time they signed in with the account their profile does not hold.
+ * An alternate on an archived profile follows the merge to the profile that survived it.
+ */
 export async function findPersonByDiscordId(payload: Payload, discordId: string): Promise<PersonRow | null> {
   const res = await payload.find({ collection: 'people', where: { discordId: { equals: discordId } }, limit: 1, depth: 0, overrideAccess: true, showHiddenFields: true })
-  return res.docs[0] ? toRow(res.docs[0]) : null
+  if (res.docs[0]) return toRow(res.docs[0])
+
+  const alt = await payload.find({
+    collection: 'people',
+    where: { 'discordAltIds.discordId': { equals: discordId } },
+    limit: 2,
+    depth: 0,
+    overrideAccess: true,
+    showHiddenFields: true,
+  })
+  const owner = alt.docs.find((d: any) => !d.mergedInto) ?? alt.docs[0]
+  if (!owner) return null
+
+  const mergedInto = (owner as any).mergedInto
+  if (mergedInto) {
+    const survivorId = typeof mergedInto === 'object' ? mergedInto.id : mergedInto
+    try {
+      const survivor = await payload.findByID({ collection: 'people', id: survivorId, depth: 0, overrideAccess: true, showHiddenFields: true })
+      if (survivor) return toRow(survivor, 'alt')
+    } catch {
+      // archived row points at a profile that is gone; fall through to the row itself
+    }
+  }
+  return toRow(owner, 'alt')
 }
 
 /**

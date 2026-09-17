@@ -24,7 +24,9 @@ export async function resolveDiscordLogin(deps: LoginDeps, profile: DiscordProfi
 
   const existing = await deps.findByDiscordId(profile.id)
   if (existing) {
-    await deps.refreshProfile(existing.id, profile)
+    // Matched through one of the person's other Discord accounts: signing in with it must not
+    // rewrite the profile's Discord name and avatar to the other account's.
+    if (existing.matchedVia !== 'alt') await deps.refreshProfile(existing.id, profile)
     return { kind: 'login', person: existing }
   }
 

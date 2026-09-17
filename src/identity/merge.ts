@@ -177,6 +177,26 @@ const stripRowIds = <T,>(value: T): T => {
   return value
 }
 
+/**
+ * The Discord accounts the survivor should sign in with afterwards: the ones it already lists,
+ * the archived row's account, and the archived row's own list. A merge is exactly the moment a
+ * second Discord account is known to belong to one person, so recording it here stops that
+ * account from making a fresh profile the next time it signs in.
+ */
+export function altIdsAfterMerge(args: {
+  targetAltIds: string[]
+  targetDiscordId?: string | null
+  sourceDiscordId: string | null
+  sourceAltIds: string[]
+}): string[] {
+  const out: string[] = []
+  for (const id of [...args.targetAltIds, args.sourceDiscordId, ...args.sourceAltIds]) {
+    if (!id || id === args.targetDiscordId || out.includes(id)) continue
+    out.push(id)
+  }
+  return out
+}
+
 const PROFILE_FIELDS = ['discordId', 'discordUsername', 'discordAvatar', 'email', 'bio', 'photo', 'avatar', 'socialLinks', 'gameAliases', 'showInLiveStreamers', 'pronouns', 'pronunciation']
 const PUG_FIELDS = ['pugTiers', 'pugApprovedRoles', 'pugInviteRegions', 'pugBattleTag', 'pugRegisteredDate', 'pugBanOffenseCount', 'pugInvitedBy']
 
@@ -477,6 +497,18 @@ export async function mergePeople(
   }
   // username follows discordId (Payload login identifier)
   if (data.discordId) data.username = data.discordId
+
+  // The archived row's Discord account keeps working: it becomes one of the survivor's.
+  const altIds = altIdsAfterMerge({
+    targetAltIds: (t.discordAltIds ?? []).map((a: any) => a.discordId).filter(Boolean),
+    targetDiscordId: data.discordId ?? t.discordId ?? null,
+    sourceDiscordId: s.discordId ?? null,
+    sourceAltIds: (s.discordAltIds ?? []).map((a: any) => a.discordId).filter(Boolean),
+  })
+  const existingAltIds = (t.discordAltIds ?? []).map((a: any) => a.discordId).filter(Boolean)
+  if (altIds.length > existingAltIds.length) {
+    data.discordAltIds = altIds.map((discordId) => ({ discordId, note: `from merge of #${sourceId}` }))
+  }
 
   // The source's unique values that the target may take over. Recorded in the audit log so a
   // merge never drops an identifier without a trace of where it went.

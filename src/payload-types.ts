@@ -739,6 +739,19 @@ export interface Person {
    */
   discordId?: string | null;
   /**
+   * Extra Discord accounts this person signs in with. A login with one of these lands on this profile instead of making a new one.
+   */
+  discordAltIds?:
+    | {
+        discordId: string;
+        /**
+         * Optional: where this account came from (e.g. "old account, merged 2026-09-17")
+         */
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Discord username, refreshed on every Discord login.
    */
   discordUsername?: string | null;
@@ -3947,6 +3960,13 @@ export interface PeopleSelect<T extends boolean = true> {
   pugBanOffenseCount?: T;
   slug?: T;
   discordId?: T;
+  discordAltIds?:
+    | T
+    | {
+        discordId?: T;
+        note?: T;
+        id?: T;
+      };
   discordUsername?: T;
   discordAvatar?: T;
   isInactive?: T;

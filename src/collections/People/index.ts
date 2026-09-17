@@ -449,6 +449,37 @@ export const People: CollectionConfig = {
       },
     },
     {
+      name: 'discordAltIds',
+      type: 'array',
+      label: 'Other Discord accounts',
+      labels: { singular: 'Discord account', plural: 'Discord accounts' },
+      access: {
+        update: managerOnly,
+      },
+      admin: {
+        position: 'sidebar',
+        description: 'Extra Discord accounts this person signs in with. A login with one of these lands on this profile instead of making a new one.',
+        condition: (_data: any, _sibling: any, { user }: any) => !!user,
+      },
+      fields: [
+        {
+          name: 'discordId',
+          type: 'text',
+          required: true,
+          validate: (value: any) => {
+            if (!value) return 'Discord ID is required'
+            if (!/^\d{17,19}$/.test(value)) return 'Discord ID must be 17-19 digits'
+            return true
+          },
+        },
+        {
+          name: 'note',
+          type: 'text',
+          admin: { description: 'Optional: where this account came from (e.g. "old account, merged 2026-09-17")' },
+        },
+      ],
+    },
+    {
       name: 'discordUsername',
       type: 'text',
       admin: {

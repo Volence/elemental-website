@@ -99,3 +99,35 @@ describe('isSyntheticIdentity', () => {
     expect(isSyntheticIdentity({ email: 'real@example.com' })).toBe(false)
   })
 })
+
+describe('alternate Discord accounts', () => {
+  const altProfile = { id: '1084918048638652426', username: 'dan.2003', displayName: 'Dan', avatar: 'zzz' }
+  const mainPerson = { ...person, id: 1563, name: 'DanBuzzBuzz', discordId: '357583052525928449' }
+
+  it('signs in on the profile that lists the account, and leaves its Discord name alone', async () => {
+    const refresh = vi.fn(async () => {})
+    const create = vi.fn()
+    const out = await resolveDiscordLogin(
+      loginDeps({
+        findByDiscordId: async () => ({ ...mainPerson, matchedVia: 'alt' as const }),
+        refreshProfile: refresh,
+        createFromDiscord: create,
+      }),
+      altProfile,
+    )
+    expect(out).toEqual({ kind: 'login', person: { ...mainPerson, matchedVia: 'alt' } })
+    expect(refresh).not.toHaveBeenCalled()
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('still refreshes the profile when the account is the profile own one', async () => {
+    const refresh = vi.fn(async () => {})
+    await resolveDiscordLogin(loginDeps({ findByDiscordId: async () => ({ ...mainPerson, matchedVia: 'primary' as const }), refreshProfile: refresh }), profile)
+    expect(refresh).toHaveBeenCalledWith(1563, profile)
+  })
+
+  it('creates a profile as before when no one lists the account', async () => {
+    const out = await resolveDiscordLogin(loginDeps(), altProfile)
+    expect(out.kind).toBe('created')
+  })
+})

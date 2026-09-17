@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { collectPeopleRelationPaths, COVERED_PEOPLE_FIELDS, PEOPLE_FK_COLUMNS } from '@/identity/merge'
+import { altIdsAfterMerge, collectPeopleRelationPaths, COVERED_PEOPLE_FIELDS, PEOPLE_FK_COLUMNS } from '@/identity/merge'
 import config from '@payload-config'
 
 describe('merge coverage', () => {
@@ -43,5 +43,29 @@ describe('merge coverage', () => {
       } as any,
     ])
     expect(paths).toEqual(['x.a', 'x.g.b', 'x.arr.person'])
+  })
+})
+
+describe('merge records the archived Discord account', () => {
+  it('keeps the archived row Discord ID as an alternate on the survivor', () => {
+    expect(altIdsAfterMerge({ targetAltIds: [], sourceDiscordId: '357583052525928449', sourceAltIds: [] })).toEqual(['357583052525928449'])
+  })
+
+  it('carries the archived row own alternates across', () => {
+    expect(altIdsAfterMerge({ targetAltIds: ['111111111111111111'], sourceDiscordId: '222222222222222222', sourceAltIds: ['333333333333333333'] }))
+      .toEqual(['111111111111111111', '222222222222222222', '333333333333333333'])
+  })
+
+  it('never lists the same account twice, and never the survivor own account', () => {
+    expect(altIdsAfterMerge({
+      targetAltIds: ['111111111111111111'],
+      targetDiscordId: '999999999999999999',
+      sourceDiscordId: '111111111111111111',
+      sourceAltIds: ['999999999999999999', '111111111111111111'],
+    })).toEqual(['111111111111111111'])
+  })
+
+  it('records nothing when the archived row had no Discord account', () => {
+    expect(altIdsAfterMerge({ targetAltIds: [], sourceDiscordId: null, sourceAltIds: [] })).toEqual([])
   })
 })
