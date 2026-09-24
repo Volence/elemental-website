@@ -51,6 +51,8 @@ export async function initializeDiscordBot(): Promise<Client | null> {
       GatewayIntentBits.MessageContent,
       GatewayIntentBits.GuildModeration,
       GatewayIntentBits.GuildInvites,
+      // PUG team voice: who is in which channel, to move players in and hand them back.
+      GatewayIntentBits.GuildVoiceStates,
     ],
     partials: [Partials.Message, Partials.Channel, Partials.GuildMember, Partials.User],
     makeCache: Options.cacheWithLimits({

@@ -813,6 +813,11 @@ model PugLobby {
   discordFeedMessageId String?
   voiceChannel1Id      String?
   voiceChannel2Id      String?
+  /// Discord user id -> the voice channel they were moved into their team channel from.
+  voiceOrigins         Json?
+  voiceStartedAt       DateTime?
+  /// Set by the voice sweep when it first hands the teams back; starts the force-delete clock.
+  voiceEndedAt         DateTime?
   pendingResult        Json?
   hostUserId           Int?
   botInstanceId        String?

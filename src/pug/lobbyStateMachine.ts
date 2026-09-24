@@ -19,7 +19,6 @@ import {
   BAN_TIMEOUT_MS,
   RESULT_CONFIRM_TIMEOUT_MS,
   DISPUTE_AFTER_COMPLETE_MS,
-  VOICE_CLEANUP_TIMEOUT_MS,
   INVITE_TIER_LATE_CANCEL_MS,
   AFK_TIMEOUT_MS,
 } from './constants'
@@ -779,10 +778,37 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
   }
 
   if (team1ChannelId || team2ChannelId) {
+    // Channels left over from an earlier start of this lobby (reset and replayed
+    // before the voice sweep got to them) are retired once the players are moved.
+    const previousChannelIds = [lobby.voiceChannel1Id, lobby.voiceChannel2Id].filter((c): c is string => !!c)
+    const previousOrigins = (lobby.voiceOrigins ?? {}) as Record<string, string>
+    let voiceOrigins: Record<string, string> = {}
+    try {
+      const { moveTeamsIntoVoice } = await import('@/discord/services/pugVoice')
+      voiceOrigins = await moveTeamsIntoVoice(
+        [
+          { channelId: team1ChannelId ?? '', userIds: team1Ids },
+          { channelId: team2ChannelId ?? '', userIds: team2Ids },
+        ],
+        { origins: previousOrigins, channelIds: previousChannelIds },
+      )
+    } catch (err) {
+      console.error(`[PUG #${lobby.lobbyNumber}] Moving players into team voice failed:`, err)
+    }
     await prisma.pugLobby.update({
       where: { id: lobbyId },
-      data: { voiceChannel1Id: team1ChannelId || null, voiceChannel2Id: team2ChannelId || null },
+      data: {
+        voiceChannel1Id: team1ChannelId || null,
+        voiceChannel2Id: team2ChannelId || null,
+        voiceOrigins,
+        voiceStartedAt: new Date(),
+        voiceEndedAt: null,
+      },
     })
+    if (previousChannelIds.length > 0) {
+      const { retireMatchVoiceChannels } = await import('@/discord/services/pugVoice')
+      await retireMatchVoiceChannels(previousChannelIds, previousOrigins).catch(console.error)
+    }
   }
 
   // Attempt automated lobby configuration via bot service
@@ -987,16 +1013,6 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
     ]).catch(console.error)
   }
 
-  registerTimer(timerKey(lobbyId, 'voice_cleanup'), VOICE_CLEANUP_TIMEOUT_MS, async () => {
-    const updatedLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
-    if (updatedLobby?.voiceChannel1Id || updatedLobby?.voiceChannel2Id) {
-      const { deleteMatchVoiceChannels } = await import('@/discord/services/pugVoice')
-      await deleteMatchVoiceChannels(
-        updatedLobby.voiceChannel1Id ?? '',
-        updatedLobby.voiceChannel2Id ?? '',
-      ).catch(console.error)
-    }
-  })
 }
 
 export async function reportResult(
@@ -1247,8 +1263,6 @@ export async function completeMatch(
   }
 
   // Status already set to COMPLETED by the atomic claim above
-  cancelTimer(timerKey(lobbyId, 'voice_cleanup'))
-
   const { updateLobbyFeed, postMatchResult } = await import('@/discord/services/pugFeed')
   await updateLobbyFeed(lobbyId).catch(console.error)
 
@@ -1267,19 +1281,9 @@ export async function completeMatch(
     await postMatchResult(lobby.tier as 'open' | 'invite', lobby.lobbyNumber, lobbyId, result, playersWithNames).catch(console.error)
   }
 
-  // Clean up voice channels if still active
-  const completedLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
-  if (completedLobby?.voiceChannel1Id || completedLobby?.voiceChannel2Id) {
-    const { deleteMatchVoiceChannels } = await import('@/discord/services/pugVoice')
-    await deleteMatchVoiceChannels(
-      completedLobby.voiceChannel1Id ?? '',
-      completedLobby.voiceChannel2Id ?? '',
-    ).catch(console.error)
-    await prisma.pugLobby.update({
-      where: { id: lobbyId },
-      data: { voiceChannel1Id: null, voiceChannel2Id: null },
-    }).catch(console.error)
-  }
+  // Hand the teams back from their voice channels; the sweep deletes the
+  // channels once they are empty.
+  import('@/discord/services/pugVoice').then(({ sweepPugVoiceSoon }) => sweepPugVoiceSoon()).catch(console.error)
 
   await autoCreateReplacementLobby(lobby).catch(console.error)
   return true
@@ -1306,25 +1310,15 @@ export async function cancelLobby(lobbyId: number, reason?: string): Promise<voi
   const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'CANCELLED' } })
   await freeBotInstanceForLobby(lobbyId, lobby?.botInstanceId ?? null)
-  ;['ready', 'draft', 'mapvote', 'ban', 'confirm', 'timeout', 'voice_cleanup'].forEach((phase) =>
+  ;['ready', 'draft', 'mapvote', 'ban', 'confirm', 'timeout'].forEach((phase) =>
     cancelTimer(timerKey(lobbyId, phase)),
   )
 
   const { updateLobbyFeed } = await import('@/discord/services/pugFeed')
   await updateLobbyFeed(lobbyId).catch(console.error)
 
-  const cancelledLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
-  if (cancelledLobby?.voiceChannel1Id || cancelledLobby?.voiceChannel2Id) {
-    const { deleteMatchVoiceChannels } = await import('@/discord/services/pugVoice')
-    await deleteMatchVoiceChannels(
-      cancelledLobby.voiceChannel1Id ?? '',
-      cancelledLobby.voiceChannel2Id ?? '',
-    ).catch(console.error)
-    await prisma.pugLobby.update({
-      where: { id: lobbyId },
-      data: { voiceChannel1Id: null, voiceChannel2Id: null },
-    }).catch(console.error)
-  }
+  // Hand anyone in the team voice channels back; the sweep deletes them.
+  import('@/discord/services/pugVoice').then(({ sweepPugVoiceSoon }) => sweepPugVoiceSoon()).catch(console.error)
 
   if (lobby) {
     await autoCreateReplacementLobby(lobby).catch(console.error)

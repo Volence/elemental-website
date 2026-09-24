@@ -426,6 +426,10 @@ const config = buildConfig({
           const { startWeeklySchedulePost, stopWeeklySchedulePost } = await import('./discord/services/productionSchedulePost')
           startWeeklySchedulePost()
 
+          // PUG team voice: hands players back and deletes finished matches' channels.
+          const { startPugVoiceSweep, stopPugVoiceSweep } = await import('./discord/services/pugVoice')
+          startPugVoiceSweep()
+
           const { serviceHealth } = await import('./discord/serviceHealth')
           serviceHealth.register('calendar-release', 20 * 60 * 1000)
           serviceHealth.register('twitch-roster', 3 * 60 * 1000)
@@ -446,6 +450,7 @@ const config = buildConfig({
             stopCalendarRelease,
             stopCalendarChannelRefresh,
             stopWeeklySchedulePost,
+            stopPugVoiceSweep,
             stopPollNotificationPolling,
             serviceHealth.stopStalenessChecker,
             shutdownDiscordBot,

@@ -21,6 +21,11 @@ export const PUG_VOICE_STAFF_ROLE_IDS: string[] = (process.env.DISCORD_PUG_VOICE
   .map((id) => id.trim())
   .filter((id) => /^\d{17,20}$/.test(id))
 
+/** Voice channel players are handed back to when their match's team channels
+ *  close and they were not moved in from a channel of their own (#pugs-general).
+ *  Override with DISCORD_PUG_LOBBY_VOICE_CHANNEL_ID; set it empty to disable. */
+export const PUG_LOBBY_VOICE_CHANNEL_ID: string = process.env.DISCORD_PUG_LOBBY_VOICE_CHANNEL_ID ?? '1512606971352584262'
+
 /** Games a player needs this season before the public leaderboard ranks them.
  *  Below this their rating is still settling (new players start with high
  *  uncertainty, so a few early wins swing them far), and they are listed as
