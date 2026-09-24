@@ -15,7 +15,14 @@ export const AFK_TIMEOUT_MS = 14_400_000 // 4 hours - auto-kick idle players in 
  * DISCORD_PUG_VOICE_STAFF_ROLE_IDS if the roles change.
  */
 const EVENT_MANAGERS_ROLE_ID = '1380228748527276113'
+
 export const PUG_VOICE_STAFF_ROLE_IDS: string[] = (process.env.DISCORD_PUG_VOICE_STAFF_ROLE_IDS ?? EVENT_MANAGERS_ROLE_ID)
   .split(',')
   .map((id) => id.trim())
   .filter((id) => /^\d{17,20}$/.test(id))
+
+/** Games a player needs this season before the public leaderboard ranks them.
+ *  Below this their rating is still settling (new players start with high
+ *  uncertainty, so a few early wins swing them far), and they are listed as
+ *  provisional instead. */
+export const PUG_RANKED_MIN_GAMES = 10

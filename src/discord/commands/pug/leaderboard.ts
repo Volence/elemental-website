@@ -2,6 +2,7 @@ import { EmbedBuilder, type ChatInputCommandInteraction } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { isPugRegion, pugRegionLabel, type PugRegion } from '@/pug/types'
+import { PUG_RANKED_MIN_GAMES } from '@/pug/constants'
 
 export async function handlePugLeaderboard(interaction: ChatInputCommandInteraction): Promise<void> {
   await interaction.deferReply()
@@ -31,7 +32,7 @@ export async function handlePugLeaderboard(interaction: ChatInputCommandInteract
         { tier: { equals: tier } },
         { season: { equals: season.id } },
         { region: { equals: region } },
-        { gamesPlayed: { greater_than: 0 } },
+        { gamesPlayed: { greater_than_equal: PUG_RANKED_MIN_GAMES } },
       ],
     },
     sort: '-rating',
@@ -49,8 +50,8 @@ export async function handlePugLeaderboard(interaction: ChatInputCommandInteract
 
   const embed = new EmbedBuilder()
     .setTitle(`PUG Leaderboard - ${tier === 'invite' ? 'Invite' : 'Open'} Tier - ${pugRegionLabel(region)}`)
-    .setDescription(lines.length > 0 ? lines.join('\n') : 'No players yet.')
-    .setFooter({ text: season.name })
+    .setDescription(lines.length > 0 ? lines.join('\n') : `No one is ranked yet - players are ranked after ${PUG_RANKED_MIN_GAMES} games.`)
+    .setFooter({ text: `${season.name} - ranked after ${PUG_RANKED_MIN_GAMES} games` })
 
   await interaction.editReply({ embeds: [embed] })
 }

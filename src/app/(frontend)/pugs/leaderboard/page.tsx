@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PageHeader, PageShell } from '@/components/PageShell'
 import { PUG_REGIONS, isPugRegion, pugRegionLabel, type PugRegion } from '@/pug/types'
+import { PUG_RANKED_MIN_GAMES } from '@/pug/constants'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'PUG Leaderboard' }
@@ -33,22 +34,41 @@ export default async function PugLeaderboardPage({
   const leaderboardWhere: any[] = [
     { tier: { equals: tier } },
     { season: { equals: resolvedSeasonId } },
-    { gamesPlayed: { greater_than: 0 } },
+    // Both tiers are rated per region: a player in EMEA never meets one in NA, so
+    // the boards are not comparable and are shown one region at a time.
+    { region: { equals: region } },
   ]
-  // Both tiers are rated per region: a player in EMEA never meets one in NA, so
-  // the boards are not comparable and are shown one region at a time.
-  leaderboardWhere.push({ region: { equals: region } })
 
-  const entries = resolvedSeasonId
-    ? await payload.find({
-        collection: 'pug-leaderboard',
-        where: { and: leaderboardWhere },
-        sort: '-rating',
-        depth: 2,
-        overrideAccess: true,
-        limit: 100,
-      })
-    : { docs: [] }
+  // Ranked players sort by rating; provisional ones by games played, since their
+  // rating is not settled enough to order them by.
+  const [ranked, provisional] = resolvedSeasonId
+    ? await Promise.all([
+        payload.find({
+          collection: 'pug-leaderboard',
+          where: { and: [...leaderboardWhere, { gamesPlayed: { greater_than_equal: PUG_RANKED_MIN_GAMES } }] },
+          sort: '-rating',
+          depth: 2,
+          overrideAccess: true,
+          limit: 100,
+        }),
+        payload.find({
+          collection: 'pug-leaderboard',
+          where: {
+            and: [
+              ...leaderboardWhere,
+              { gamesPlayed: { greater_than: 0 } },
+              { gamesPlayed: { less_than: PUG_RANKED_MIN_GAMES } },
+            ],
+          },
+          sort: ['-gamesPlayed', '-rating'],
+          depth: 2,
+          overrideAccess: true,
+          limit: 100,
+        }),
+      ])
+    : [{ docs: [] }, { docs: [] }]
+  const rankedDocs = ranked.docs as any[]
+  const provisionalDocs = provisional.docs as any[]
 
   const currentSeason = (seasons.docs[0] as any)
 
@@ -94,75 +114,111 @@ export default async function PugLeaderboardPage({
         ))}
       </div>
 
-      {(entries as any).docs.length === 0 ? (
+      {rankedDocs.length === 0 && provisionalDocs.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground border border-border rounded-xl bg-card/30">
           <p className="text-lg font-medium text-muted-foreground">No {pugRegionLabel(region)} players yet this season</p>
           <p className="text-sm mt-1">Play a match to appear on the leaderboard.</p>
         </div>
       ) : (
-        <div className="border border-border rounded-xl overflow-hidden bg-card/30">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-card/60">
-                <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-14">#</th>
-                <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Player</th>
-                <th className="text-right px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rating</th>
-                <th className="text-right px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">W</th>
-                <th className="text-right px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">L</th>
-                <th className="text-right px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">D</th>
-                <th className="text-right px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">GP</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {(entries as any).docs.map((entry: any, index: number, arr: any[]) => {
-                const displayName = typeof entry.player === 'object' ? entry.player?.name : `User #${entry.player}`
-                const rank = index === 0 || entry.rating !== arr[index - 1].rating
-                  ? index + 1
-                  : arr.findIndex((e: any) => e.rating === entry.rating) + 1
-                const isTop3 = rank <= 3
-                const winRate = entry.gamesPlayed > 0 ? Math.round((entry.wins / entry.gamesPlayed) * 100) : 0
-                return (
-                  <tr key={entry.id} className={`hover:bg-white/[0.03] transition-colors duration-150 ${isTop3 ? 'bg-gradient-to-r from-card/0 via-gray-900/0 to-card/0' : ''}`}>
-                    <td className="px-4 py-3.5">
-                      {isTop3 ? (
-                        <span className="text-lg leading-none">
-                          {['🥇', '🥈', '🥉'][rank - 1]}
-                        </span>
-                      ) : (
-                        <span className="font-bold text-sm text-muted-foreground/70">{rank}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <Link
-                        href={`/pugs/profile/${typeof entry.player === 'object' ? entry.player?.id : entry.player}`}
-                        className={`font-medium transition-colors duration-200 ${
-                          isTop3
-                            ? tier === 'invite' ? 'text-foreground hover:text-purple-300' : 'text-foreground hover:text-blue-300'
-                            : 'text-foreground/90 hover:text-foreground'
-                        }`}
-                      >
-                        {displayName}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3.5 text-right">
-                      <span className={`font-mono font-bold ${
-                        isTop3 ? tier === 'invite' ? 'text-purple-400' : 'text-blue-400' : 'text-foreground'
-                      }`}>
-                        {entry.rating}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right font-medium text-green-400">{entry.wins}</td>
-                    <td className="px-4 py-3.5 text-right font-medium text-red-400">{entry.losses}</td>
-                    <td className="px-4 py-3.5 text-right text-muted-foreground">{entry.draws}</td>
-                    <td className="px-4 py-3.5 text-right text-muted-foreground">{entry.gamesPlayed}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-          <div className={`h-1 bg-gradient-to-r ${tier === 'invite' ? 'from-purple-600 via-purple-500 to-pink-400' : 'from-blue-600 via-blue-500 to-cyan-400'} opacity-60`} />
-        </div>
+        <>
+          {rankedDocs.length > 0 ? (
+            <LeaderboardTable entries={rankedDocs} tier={tier} ranked />
+          ) : (
+            <div className="text-center py-10 text-muted-foreground border border-border rounded-xl bg-card/30">
+              <p className="font-medium">No one is ranked yet</p>
+              <p className="text-sm mt-1">Players are ranked once they have played {PUG_RANKED_MIN_GAMES} games this season.</p>
+            </div>
+          )}
+
+          {provisionalDocs.length > 0 && (
+            <section className="mt-10">
+              <h2 className="text-sm font-bold text-foreground/90 uppercase tracking-wider">Provisional</h2>
+              <p className="text-sm text-muted-foreground mt-1 mb-3">
+                Ratings are still settling. Players are ranked after {PUG_RANKED_MIN_GAMES} games.
+              </p>
+              <LeaderboardTable entries={provisionalDocs} tier={tier} ranked={false} />
+            </section>
+          )}
+        </>
       )}
     </PageShell>
+  )
+}
+
+function LeaderboardTable({ entries, tier, ranked }: { entries: any[]; tier: string; ranked: boolean }) {
+  return (
+    <div className="border border-border rounded-xl overflow-hidden bg-card/30">
+      <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-border bg-card/60">
+            {ranked && <th className="text-left px-2.5 sm:px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider sm:w-14">#</th>}
+            <th className="text-left px-2.5 sm:px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Player</th>
+            <th className="text-right px-2.5 sm:px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rating</th>
+            <th className="text-right px-2.5 sm:px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider sm:w-16">W</th>
+            <th className="text-right px-2.5 sm:px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider sm:w-16">L</th>
+            <th className="text-right px-2.5 sm:px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider sm:w-16 hidden sm:table-cell">D</th>
+            <th className="text-right px-2.5 sm:px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider sm:w-16">GP</th>
+            {!ranked && <th className="text-right px-2.5 sm:px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">To rank</th>}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {entries.map((entry: any, index: number, arr: any[]) => {
+            const displayName = typeof entry.player === 'object' ? entry.player?.name : `User #${entry.player}`
+            const rank = index === 0 || entry.rating !== arr[index - 1].rating
+              ? index + 1
+              : arr.findIndex((e: any) => e.rating === entry.rating) + 1
+            const isTop3 = ranked && rank <= 3
+            const gamesToRank = Math.max(0, PUG_RANKED_MIN_GAMES - (entry.gamesPlayed ?? 0))
+            return (
+              <tr key={entry.id} className="hover:bg-white/[0.03] transition-colors duration-150">
+                {ranked && (
+                  <td className="px-2.5 sm:px-4 py-3.5">
+                    {isTop3 ? (
+                      <span className="text-lg leading-none">
+                        {['🥇', '🥈', '🥉'][rank - 1]}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-sm text-muted-foreground/70">{rank}</span>
+                    )}
+                  </td>
+                )}
+                <td className="px-2.5 sm:px-4 py-3.5">
+                  <Link
+                    href={`/pugs/profile/${typeof entry.player === 'object' ? entry.player?.id : entry.player}`}
+                    className={`font-medium whitespace-nowrap transition-colors duration-200 ${
+                      isTop3
+                        ? tier === 'invite' ? 'text-foreground hover:text-purple-300' : 'text-foreground hover:text-blue-300'
+                        : 'text-foreground/90 hover:text-foreground'
+                    }`}
+                  >
+                    {displayName}
+                  </Link>
+                </td>
+                <td className="px-2.5 sm:px-4 py-3.5 text-right">
+                  <span className={`font-mono font-bold ${
+                    isTop3 ? tier === 'invite' ? 'text-purple-400' : 'text-blue-400' : ranked ? 'text-foreground' : 'text-muted-foreground'
+                  }`}>
+                    {entry.rating}
+                  </span>
+                </td>
+                <td className="px-2.5 sm:px-4 py-3.5 text-right font-medium text-green-400">{entry.wins}</td>
+                <td className="px-2.5 sm:px-4 py-3.5 text-right font-medium text-red-400">{entry.losses}</td>
+                <td className="px-2.5 sm:px-4 py-3.5 text-right text-muted-foreground hidden sm:table-cell">{entry.draws}</td>
+                <td className="px-2.5 sm:px-4 py-3.5 text-right text-muted-foreground">{entry.gamesPlayed}</td>
+                {!ranked && (
+                  <td className="px-2.5 sm:px-4 py-3.5 text-right text-muted-foreground whitespace-nowrap">
+                    <span className="sm:hidden">{gamesToRank}</span>
+                    <span className="hidden sm:inline">{gamesToRank} more game{gamesToRank === 1 ? '' : 's'}</span>
+                  </td>
+                )}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+      </div>
+      <div className={`h-1 bg-gradient-to-r ${tier === 'invite' ? 'from-purple-600 via-purple-500 to-pink-400' : 'from-blue-600 via-blue-500 to-cyan-400'} opacity-60`} />
+    </div>
   )
 }
