@@ -24,33 +24,8 @@ import {
   AFK_TIMEOUT_MS,
 } from './constants'
 
-/** Lobby statuses that still hold a player - they cannot sit in two of these at once. */
-export const ACTIVE_LOBBY_STATUSES = [
-  'OPEN',
-  'READY',
-  'DRAFTING',
-  'MAP_VOTE',
-  'BANNING',
-  'IN_PROGRESS',
-  'REPORTING',
-] as const
-
-export type ActiveLobbyRef = { lobbyNumber: number; status: string; pendingResult: unknown }
-
-/**
- * Whether a lobby the player already sits in should stop them opening another one.
- * REPORTING with a submitted result does not: that game is over bar the confirmation,
- * so they are free to queue for the next. joinLobby applies the same carve-out, and the
- * two must agree - a create guard stricter than the join guard strands players between games.
- */
-export function blocksNewLobby(lobby: ActiveLobbyRef | null): boolean {
-  if (!lobby) return false
-  if (lobby.status === 'REPORTING') {
-    const pending = lobby.pendingResult as { reportedBy?: unknown } | null
-    if (pending && pending.reportedBy) return false
-  }
-  return true
-}
+import { ACTIVE_LOBBY_STATUSES, blocksNewLobby, type ActiveLobbyRef } from './lobbyBlocking'
+export { ACTIVE_LOBBY_STATUSES, blocksNewLobby, type ActiveLobbyRef }
 
 /** The lobby currently holding this player, or null. */
 export async function findActiveLobbyForUser(userId: number): Promise<ActiveLobbyRef | null> {
@@ -1140,14 +1115,21 @@ export async function autoConfirmResult(lobbyId: number): Promise<void> {
   await completeMatch(lobbyId, pending.result)
 }
 
-export async function completeMatch(lobbyId: number, result: MatchResult): Promise<void> {
+export async function completeMatch(
+  lobbyId: number,
+  result: MatchResult,
+  opts: { resolveDispute?: boolean } = {},
+): Promise<boolean> {
   // Atomically claim this completion — prevents double ELO/posting from race
   // between confirmResult() and autoConfirmResult() timer.
+  // Only an admin resolving a dispute may complete a DISPUTED lobby; bot and
+  // stats pushes must not override the dispute.
+  const claimable = opts.resolveDispute ? ['REPORTING', 'IN_PROGRESS', 'DISPUTED'] : ['REPORTING', 'IN_PROGRESS']
   const claimed = await prisma.pugLobby.updateMany({
-    where: { id: lobbyId, status: { in: ['REPORTING', 'IN_PROGRESS'] } },
+    where: { id: lobbyId, status: { in: claimable as any } },
     data: { status: 'COMPLETED', completedAt: new Date() },
   })
-  if (claimed.count === 0) return
+  if (claimed.count === 0) return false
 
   const lobby = await prisma.pugLobby.findUniqueOrThrow({
     where: { id: lobbyId },
@@ -1300,6 +1282,7 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
   }
 
   await autoCreateReplacementLobby(lobby).catch(console.error)
+  return true
 }
 
 /** Release the bot instance bound to this lobby and clear the lobby's bot fields.

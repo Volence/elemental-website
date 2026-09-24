@@ -1,6 +1,7 @@
 'use client'
 
 import { startPolling } from '@/utilities/polling'
+import { blocksNewLobby } from '@/pug/lobbyBlocking'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -88,7 +89,7 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
 
   const currentUserId = queueStatus?.currentUserId as number | undefined
   const myLobbyId = queueStatus?.placed ? queueStatus.lobbyId :
-    lobbies.find((l) => currentUserId && l.players.some((p) => p.userId === currentUserId))?.id
+    lobbies.find((l) => currentUserId && l.players.some((p) => p.userId === currentUserId) && blocksNewLobby(l))?.id
 
   async function handleJoinQueue() {
     if (selectedRoles.length === 0) {

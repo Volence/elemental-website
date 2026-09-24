@@ -31,7 +31,10 @@ export async function POST(request: NextRequest, { params }: Params) {
   }
 
   try {
-    await completeMatch(lobbyId, result)
+    const completed = await completeMatch(lobbyId, result, { resolveDispute: true })
+    if (!completed) {
+      return NextResponse.json({ error: 'This match is not waiting on a result - it may already be complete or cancelled' }, { status: 409 })
+    }
     return NextResponse.json({ success: true })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 400 })

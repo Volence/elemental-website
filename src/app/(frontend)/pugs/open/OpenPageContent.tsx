@@ -2,6 +2,7 @@
 
 import { startPolling } from '@/utilities/polling'
 import { PUG_REGIONS, PUG_REGION_LABELS } from '@/pug/types'
+import { blocksNewLobby } from '@/pug/lobbyBlocking'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -156,16 +157,9 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
 
   const openLobbies = lobbies.filter((l) => l.status === 'OPEN' && l.region === selectedRegion)
   const activeLobbies = lobbies.filter((l) => l.status !== 'OPEN' && l.region === selectedRegion)
-  const myLobbyId = lobbies.find((l) => {
-    if (!l.players.some((p) => p.userId === currentUser?.id)) return false
-    if (l.status === 'REPORTING') {
-      const pr = l.pendingResult as any
-      if (pr && pr.reportedBy) {
-        return false // Ignore this lobby, player is free to join another
-      }
-    }
-    return true
-  })?.id
+  const myLobbyId = lobbies.find(
+    (l) => l.players.some((p) => p.userId === currentUser?.id) && blocksNewLobby(l),
+  )?.id
 
   return (
     <>

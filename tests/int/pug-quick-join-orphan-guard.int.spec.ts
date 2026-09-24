@@ -33,4 +33,17 @@ describe('blocksNewLobby', () => {
       blocksNewLobby({ lobbyNumber: 80, status: 'REPORTING', pendingResult: { reportedBy: 42 } }),
     ).toBe(false)
   })
+
+  // 2026-09-24, PUG #129: a disputed game had ended, but the Open page counted the
+  // DISPUTED lobby as the player's current one and hid Quick Join for all ten players.
+  it('allows a create while the previous game is disputed', () => {
+    expect(
+      blocksNewLobby({ lobbyNumber: 129, status: 'DISPUTED', pendingResult: { result: 'team1', reportedBy: 42 } }),
+    ).toBe(false)
+  })
+
+  it('allows a create once the previous game is completed or cancelled', () => {
+    expect(blocksNewLobby({ lobbyNumber: 80, status: 'COMPLETED', pendingResult: null })).toBe(false)
+    expect(blocksNewLobby({ lobbyNumber: 80, status: 'CANCELLED', pendingResult: null })).toBe(false)
+  })
 })
