@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
+import { ON_BROADCAST_SCHEDULE } from '@/utilities/productionCoverage'
 
 export interface UpcomingItem {
   id: string
@@ -69,8 +70,8 @@ export async function GET(request: NextRequest): Promise<Response> {
             { status: { equals: 'scheduled' } },
             {
               or: [
-                { 'productionWorkflow.includeInSchedule': { equals: true } },
-                { 'stream.url': { exists: true } },
+                { and: [...ON_BROADCAST_SCHEDULE] },
+                { and: [{ 'stream.url': { exists: true } }, { 'stream.url': { not_equals: '' } }] },
               ],
             },
           ],

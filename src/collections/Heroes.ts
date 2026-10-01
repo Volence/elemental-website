@@ -26,7 +26,7 @@ export const Heroes: CollectionConfig = {
       required: true,
       unique: true,
       admin: {
-        description: 'Hero name (e.g., Tracer, Winston)',
+        description: 'Exact in-game name, spelled the way Overwatch spells it (e.g. D.Va, D.Mon, Soldier: 76). PUG lobby settings paste it straight into the hero bans.',
       },
     },
     {
@@ -35,7 +35,7 @@ export const Heroes: CollectionConfig = {
       required: true,
       options: [
         { label: 'Tank', value: 'tank' },
-        { label: 'DPS', value: 'dps' },
+        { label: 'DPS', value: 'damage' },
         { label: 'Support', value: 'support' },
       ],
     },

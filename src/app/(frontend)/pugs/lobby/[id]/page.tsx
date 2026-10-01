@@ -1022,7 +1022,7 @@ function BanUI({
   )
   const roleOrder = ['tank', 'damage', 'support']
   const ungrouped = filtered.reduce<Record<string, Hero[]>>((acc, h) => {
-    ;(acc[h.role] ??= []).push(h)
+    ;(acc[h.role === 'dps' ? 'damage' : h.role] ??= []).push(h)
     return acc
   }, {})
   const grouped: Record<string, Hero[]> = {}

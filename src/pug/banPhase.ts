@@ -1,7 +1,14 @@
 import type { BanRecord } from './types'
 
-export type HeroRole = 'tank' | 'dps' | 'support'
+export type HeroRole = 'tank' | 'damage' | 'support'
 export type HeroRoleMap = Record<number, HeroRole>
+
+/** Hero roles are stored as 'damage'; older hero rows saved from the admin may still say 'dps'. */
+export function normalizeHeroRole(role: string | null | undefined): HeroRole | undefined {
+  if (role === 'dps' || role === 'damage') return 'damage'
+  if (role === 'tank' || role === 'support') return role
+  return undefined
+}
 
 export const BAN_ORDER: Array<1 | 2> = [2, 1]
 

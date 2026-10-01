@@ -3635,6 +3635,51 @@
       border-style: dashed;
       color: rgba(255, 255, 255, 0.45);
     }
+
+    // Name-only staff: assigned, but no account behind it
+    &--placeholder {
+      border-style: dashed;
+    }
+
+    &--add {
+      background: none;
+      border: 1px dashed rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+
+      &:hover {
+        border-color: rgba($admin-accent-primary, 0.45);
+        color: $admin-accent-primary;
+      }
+    }
+  }
+
+  &__placeholder-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    input {
+      width: 9rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 100px;
+      border: 1px solid rgba($admin-accent-primary, 0.4);
+      background: rgba(0, 0, 0, 0.25);
+      color: inherit;
+      font-size: 0.7rem;
+    }
+
+    button {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1;
+
+      &:hover:not(:disabled) { color: $admin-accent-primary; }
+      &:disabled { opacity: 0.35; cursor: not-allowed; }
+    }
   }
 
   &__person-remove {

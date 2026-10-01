@@ -7,6 +7,7 @@ import { ParticleBackground } from '@/components/ParticleBackground'
 import { CalendarGrid } from './components/CalendarGrid'
 import { CalendarHeader } from './components/CalendarHeader'
 import { PublicCalendarMonth } from './components/PublicCalendarMonth'
+import { ON_BROADCAST_SCHEDULE } from '@/utilities/productionCoverage'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,7 +46,7 @@ export default async function CalendarPage() {
     where: {
       and: [
         { date: { greater_than_equal: now.toISOString() } },
-        { 'productionWorkflow.includeInSchedule': { equals: true } },
+        ...ON_BROADCAST_SCHEDULE,
         { status: { not_equals: 'complete' } },
       ],
     },

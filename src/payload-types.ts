@@ -1788,6 +1788,16 @@ export interface Match {
         }[]
       | null;
     /**
+     * Someone working this match who could not sign up. Shown by name in the schedule post, never tagged, and counted toward coverage.
+     */
+    placeholderStaff?:
+      | {
+          role: 'caster' | 'observer' | 'producer' | 'director';
+          name: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
      * Auto-calculated: none/partial/full
      */
     coverageStatus?: ('none' | 'partial' | 'full') | null;
@@ -1977,10 +1987,10 @@ export interface RecruitmentListing {
 export interface Hero {
   id: number;
   /**
-   * Hero name (e.g., Tracer, Winston)
+   * Exact in-game name, spelled the way Overwatch spells it (e.g. D.Va, D.Mon, Soldier: 76). PUG lobby settings paste it straight into the hero bans.
    */
   name: string;
-  role: 'tank' | 'dps' | 'support';
+  role: 'tank' | 'damage' | 'support';
   /**
    * Hero portrait image
    */
@@ -4346,6 +4356,13 @@ export interface MatchesSelect<T extends boolean = true> {
           | {
               user?: T;
               style?: T;
+              id?: T;
+            };
+        placeholderStaff?:
+          | T
+          | {
+              role?: T;
+              name?: T;
               id?: T;
             };
         coverageStatus?: T;

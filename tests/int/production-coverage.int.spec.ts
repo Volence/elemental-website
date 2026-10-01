@@ -76,3 +76,21 @@ describe('producerDirectorOverlap', () => {
     expect(producerDirectorOverlap({ assignedProducers: [{ id: 7 }], assignedDirectors: [7] })).toEqual([7])
   })
 })
+
+describe('computeCoverageStatus with name-only staff', () => {
+  it('counts them like assigned people', () => {
+    expect(computeCoverageStatus({
+      assignedObservers: [1],
+      placeholderStaff: [
+        { role: 'producer', name: 'Stand In' },
+        { role: 'caster', name: 'A' },
+        { role: 'caster', name: 'B' },
+      ],
+    })).toBe('full')
+    expect(computeCoverageStatus({ placeholderStaff: [{ role: 'director', name: 'D' }] })).toBe('partial')
+  })
+
+  it('ignores blank names', () => {
+    expect(computeCoverageStatus({ placeholderStaff: [{ role: 'observer', name: ' ' }] })).toBe('none')
+  })
+})

@@ -83,27 +83,24 @@ export function ScheduleBuilderView() {
         }
       }
 
-      const updateData: any = {
-        productionWorkflow: {
-          ...match.productionWorkflow,
-          includeInSchedule: !currentValue
-        }
-      }
-
-      // When adding a tournament slot to schedule, convert it to a real match
       if (!currentValue && match.isTournamentSlot) {
-        updateData.isTournamentSlot = false
         toast.info('Converting tournament slot to confirmed match')
       }
 
-      await fetch(`/api/matches/${matchId}`, {
-        method: 'PATCH',
+      const res = await fetch('/api/production/schedule-include', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData),
+        credentials: 'include',
+        body: JSON.stringify({ matchId, include: !currentValue }),
       })
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        toast.error(body?.message || `Could not update the schedule (${res.status})`)
+        return
+      }
 
       // Update local state
-      setMatches(matches.map(m =>
+      setMatches((prev) => prev.map(m =>
         m.id === matchId
           ? {
               ...m,

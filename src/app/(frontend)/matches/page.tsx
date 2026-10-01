@@ -10,6 +10,7 @@ import { ClientUpcomingMatches } from './components/ClientUpcomingMatches'
 import { PastMatches } from './components/PastMatches'
 import { NoResults } from './components/NoResults'
 import { ParticleBackground } from '@/components/ParticleBackground'
+import { ON_BROADCAST_SCHEDULE } from '@/utilities/productionCoverage'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -53,11 +54,7 @@ export default async function MatchesPage({
               greater_than_equal: twoHoursAgo.toISOString(),
             },
           },
-          {
-            'productionWorkflow.includeInSchedule': {
-              equals: true,
-            },
-          },
+          ...ON_BROADCAST_SCHEDULE,
 
         ],
       },

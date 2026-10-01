@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 
-import { anyone, staffManagerOrAbove } from '@/access'
+import { anyone, department, staffManagerOrAbove } from '@/access'
 import { computeCoverageStatus, producerDirectorOverlap } from '@/utilities/productionCoverage'
 import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 
@@ -15,12 +15,14 @@ export const Matches: CollectionConfig = {
     plural: 'Matches',
   },
   access: {
-    // Only production managers (admin, staff-manager) can create, update, delete matches
-    // Regular production staff sign up through Production Dashboard only
+    // Admins and staff managers create and delete matches. Production leads (e.g. a Lead Caster)
+    // also update them: the dashboard shows them the Weekly, Assignment and Schedule Builder tabs,
+    // and every change there is a match update - without this their ticks failed silently.
+    // Regular production staff sign up through the Production Dashboard only.
     create: staffManagerOrAbove,
     delete: staffManagerOrAbove,
     read: anyone, // Public can read (for frontend)
-    update: staffManagerOrAbove,
+    update: department('production', 'lead'),
   },
   admin: {
     useAsTitle: 'title',
@@ -705,6 +707,34 @@ export const Matches: CollectionConfig = {
                         { label: 'Color', value: 'color' },
                         { label: 'Both', value: 'both' },
                       ],
+                    },
+                  ],
+                },
+                {
+                  name: 'placeholderStaff',
+                  type: 'array',
+                  minRows: 0,
+                  dbName: 'placeholder_staff',
+                  label: '✅ Placeholder Staff (name only)',
+                  admin: {
+                    description: 'Someone working this match who could not sign up. Shown by name in the schedule post, never tagged, and counted toward coverage.',
+                  },
+                  fields: [
+                    {
+                      name: 'role',
+                      type: 'select',
+                      required: true,
+                      options: [
+                        { label: 'Caster', value: 'caster' },
+                        { label: 'Observer', value: 'observer' },
+                        { label: 'Producer', value: 'producer' },
+                        { label: 'Director', value: 'director' },
+                      ],
+                    },
+                    {
+                      name: 'name',
+                      type: 'text',
+                      required: true,
                     },
                   ],
                 },

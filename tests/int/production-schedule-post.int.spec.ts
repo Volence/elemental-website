@@ -313,3 +313,39 @@ describe('weekly fresh post', () => {
     expect(shouldStartNewWeek(null, new Date('2026-09-16T19:00:00Z'))).toBe(false)
   })
 })
+
+describe('name-only staff', () => {
+  const withPlaceholders = match({
+    productionWorkflow: {
+      includeInSchedule: true,
+      coverageStatus: 'full',
+      assignedObservers: [observer],
+      assignedProducers: [],
+      assignedCasters: [{ user: caster }],
+      placeholderStaff: [
+        { role: 'producer', name: 'Stand In' },
+        { role: 'caster', name: 'Guest Caster' },
+        { role: 'director', name: '  ' },
+      ],
+    },
+  })
+
+  it('shows the typed name in the staff post without tagging anyone', () => {
+    const text = formatStaffSchedule([withPlaceholders], { mentionStyle: 'discord' })
+    expect(text).toContain('Producer: Stand In')
+    expect(text).toContain('Casters: <@333333333333333333> & Guest Caster')
+    expect(text).not.toContain('@Stand In')
+    // A blank name is not a director
+    expect(text).not.toContain('Director')
+  })
+
+  it('shows the typed name in the public post', () => {
+    const text = formatPublicSchedule([withPlaceholders])
+    expect(text).toContain('Producer: Stand In')
+    expect(text).toContain('Casters: Cast Three & Guest Caster')
+  })
+
+  it('reposts when name-only staff change', () => {
+    expect(schedulePostRelevantChange(withPlaceholders, match())).toBe(true)
+  })
+})

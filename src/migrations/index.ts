@@ -5,6 +5,8 @@ import * as migration_20260907_production_roles_drop_columns from "./20260907_pr
 import * as migration_20260908_availability_calendar_drift from "./20260908_availability_calendar_drift";
 import * as migration_20260916_stream_announce from "./20260916_stream_announce";
 import * as migration_20260917_discord_alt_ids from "./20260917_discord_alt_ids";
+import * as migration_20261001_placeholder_staff from "./20261001_placeholder_staff";
+import * as migration_20261001_hero_role_damage from "./20261001_hero_role_damage";
 import * as migration_20260904_teams_faceit_withdrawn from "./20260904_teams_faceit_withdrawn";
 import * as migration_20251218_130100 from "./20251218_130100";
 import * as migration_20251222_190839_add_recruitment_collections from "./20251222_190839_add_recruitment_collections";
@@ -341,5 +343,15 @@ export const migrations = [
     up: migration_20260917_discord_alt_ids.up,
     down: migration_20260917_discord_alt_ids.down,
     name: "20260917_discord_alt_ids",
+  },
+  {
+    up: migration_20261001_placeholder_staff.up,
+    down: migration_20261001_placeholder_staff.down,
+    name: "20261001_placeholder_staff",
+  },
+  {
+    up: migration_20261001_hero_role_damage.up,
+    down: migration_20261001_hero_role_damage.down,
+    name: "20261001_hero_role_damage",
   },
 ];

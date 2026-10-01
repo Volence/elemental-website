@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, createContext, useContext } from 'react'
 import { toast } from '@payloadcms/ui'
-import { AlertTriangle, CheckCircle, Globe, XCircle, ChevronDown, ChevronRight, X, Eye, Clapperboard, Focus, Mic, Users } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Globe, XCircle, ChevronDown, ChevronRight, X, Eye, Clapperboard, Focus, Mic, Plus, Users } from 'lucide-react'
 import { slotSignups, assignedElsewhere, type SlotSignups } from '@/utilities/productionSignups'
 
 interface User {
@@ -43,6 +43,7 @@ interface Match {
     assignedProducers?: (User | number)[]
     assignedDirectors?: (User | number)[]
     assignedCasters?: CasterSignup[]
+    placeholderStaff?: Placeholder[]
     dateChanged?: boolean
     previousDate?: string
   }
@@ -54,6 +55,20 @@ type RoleKey = 'observer' | 'producer' | 'director' | 'caster'
 
 type AssignFn = (matchId: number, role: RoleKey, userId: number, style?: string | null) => void
 type UnassignFn = (matchId: number, role: RoleKey, userId: number) => void
+
+/** Name-only staff: someone working the match who could not sign up. Never tagged in posts. */
+interface Placeholder {
+  id?: string
+  role: RoleKey
+  name: string
+}
+
+interface PlaceholderActions {
+  add: (matchId: number, role: RoleKey, name: string) => Promise<boolean>
+  remove: (matchId: number, placeholderId: string) => void
+}
+
+const PlaceholderContext = createContext<PlaceholderActions | null>(null)
 
 interface MatchGroup {
   dateTime: string
@@ -82,8 +97,10 @@ const shortMatchLabel = (title: string): string => title.replace(/^ELMT\s+/, '')
 
 // ─── Compact Role Row ───
 
-function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assigned, blockedIds = [], busyElsewhere, onAssign, onUnassign }: {
+function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assigned, placeholders = [], blockedIds = [], busyElsewhere, onAssign, onUnassign }: {
   matchId: number
+  /** Name-only staff in this role. */
+  placeholders?: Placeholder[]
   roleName: string
   roleKey: RoleKey
   roleIcon: React.ReactNode
@@ -105,7 +122,15 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assi
   const assignedList: { user: User | number | null; style?: string | null }[] = isCaster
     ? ((assigned as CasterSignup[]) || []).map(c => ({ user: c.user, style: c.style }))
     : ((assigned as (User | number)[]) || []).map(u => ({ user: u }))
-  const slotsFilled = assignedList.length
+  const slotsFilled = assignedList.length + placeholders.length
+  const placeholderActions = useContext(PlaceholderContext)
+  const [addingName, setAddingName] = useState<string | null>(null)
+
+  const submitPlaceholder = async () => {
+    const name = addingName?.trim()
+    if (!name || !placeholderActions) return
+    if (await placeholderActions.add(matchId, roleKey, name)) setAddingName(null)
+  }
 
   return (
     <div className="assignment-v2__role-row">
@@ -135,6 +160,20 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assi
           )
         })}
 
+        {/* Name-only staff (could not sign up) */}
+        {placeholders.map((ph, idx) => (
+          <span key={`p-${ph.id ?? idx}`} className="assignment-v2__person-pill assignment-v2__person-pill--assigned assignment-v2__person-pill--placeholder" title="Name only - shown in the schedule post, not tagged">
+            <CheckCircle size={10} />
+            {ph.name}
+            <em>(name only)</em>
+            <button
+              onClick={() => ph.id && placeholderActions?.remove(matchId, ph.id)}
+              className="assignment-v2__person-remove"
+              title="Remove"
+            ><X size={10} /></button>
+          </span>
+        ))}
+
         {/* Available (not yet assigned) */}
         {signups.map((signup, idx) => {
           const user = isCaster ? (signup as CasterSignup).user : signup
@@ -161,13 +200,45 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assi
           )
         })}
 
-        {signups.length === 0 && assignedList.length === 0 && (
+        {signups.length === 0 && slotsFilled === 0 && addingName === null && (
           <span className="assignment-v2__no-signups">No signups</span>
         )}
+
+        {placeholderActions && (addingName === null ? (
+          <button
+            onClick={() => setAddingName('')}
+            className="assignment-v2__person-pill assignment-v2__person-pill--add"
+            title={`Add someone by name who could not sign up as ${roleName.toLowerCase()} - they are not tagged in the post`}
+          >
+            <Plus size={10} /> Name
+          </button>
+        ) : (
+          <span className="assignment-v2__placeholder-input">
+            <input
+              autoFocus
+              value={addingName}
+              maxLength={80}
+              placeholder="Name (not tagged)"
+              aria-label={`${roleName} name, not tagged`}
+              onChange={(e) => setAddingName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void submitPlaceholder()
+                if (e.key === 'Escape') setAddingName(null)
+              }}
+            />
+            <button onClick={() => void submitPlaceholder()} disabled={!addingName.trim()} title="Add">
+              <CheckCircle size={12} />
+            </button>
+            <button onClick={() => setAddingName(null)} title="Cancel"><X size={12} /></button>
+          </span>
+        ))}
       </div>
     </div>
   )
 }
+
+const placeholdersFor = (pw: NonNullable<Match['productionWorkflow']>, role: RoleKey): Placeholder[] =>
+  (pw.placeholderStaff ?? []).filter(p => p.role === role)
 
 // ─── Match Card (compact) ───
 
@@ -205,25 +276,25 @@ function MatchCard({ match, signups, busyElsewhere, onAssign, onUnassign }: {
       <div className="assignment-v2__roles">
         <RoleRow
           matchId={match.id} roleName="Observer" roleKey="observer" roleIcon={<Eye size={12} />}
-          minSlots={1} signups={signups.observers} assigned={pw.assignedObservers || []}
+          minSlots={1} signups={signups.observers} assigned={pw.assignedObservers || []} placeholders={placeholdersFor(pw, 'observer')}
           busyElsewhere={busyElsewhere}
           onAssign={onAssign} onUnassign={onUnassign}
         />
         <RoleRow
           matchId={match.id} roleName="Producer" roleKey="producer" roleIcon={<Clapperboard size={12} />}
-          minSlots={1} signups={signups.producers} assigned={pw.assignedProducers || []}
+          minSlots={1} signups={signups.producers} assigned={pw.assignedProducers || []} placeholders={placeholdersFor(pw, 'producer')}
           blockedIds={assignedIds(pw.assignedDirectors)} busyElsewhere={busyElsewhere}
           onAssign={onAssign} onUnassign={onUnassign}
         />
         <RoleRow
           matchId={match.id} roleName="Director" roleKey="director" roleIcon={<Focus size={12} />}
-          minSlots={0} signups={signups.producers} assigned={pw.assignedDirectors || []}
+          minSlots={0} signups={signups.producers} assigned={pw.assignedDirectors || []} placeholders={placeholdersFor(pw, 'director')}
           blockedIds={assignedIds(pw.assignedProducers)} busyElsewhere={busyElsewhere}
           onAssign={onAssign} onUnassign={onUnassign}
         />
         <RoleRow
           matchId={match.id} roleName="Casters" roleKey="caster" roleIcon={<Mic size={12} />}
-          minSlots={2} signups={signups.casters as CasterSignup[]} assigned={pw.assignedCasters || []}
+          minSlots={2} signups={signups.casters as CasterSignup[]} assigned={pw.assignedCasters || []} placeholders={placeholdersFor(pw, 'caster')}
           busyElsewhere={busyElsewhere}
           onAssign={onAssign} onUnassign={onUnassign}
         />
@@ -352,6 +423,33 @@ export function AssignmentView() {
     }
   }
 
+  /** Add or remove name-only staff. Same route and fresh-read rule as assigning a person. */
+  const changePlaceholder = async (body: Record<string, unknown>, matchId: number): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/production/assignment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, matchId }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        toast.error(data.message || 'Failed to update name-only staff')
+        return false
+      }
+      setMatches(prev => prev.map(m => m.id === matchId ? data : m))
+      return true
+    } catch (error) {
+      console.error('Error updating name-only staff:', error)
+      toast.error('Error updating name-only staff')
+      return false
+    }
+  }
+
+  const placeholderActions: PlaceholderActions = {
+    add: (matchId, role, name) => changePlaceholder({ action: 'add-placeholder', role, name }, matchId),
+    remove: (matchId, placeholderId) => { void changePlaceholder({ action: 'remove-placeholder', placeholderId }, matchId) },
+  }
+
   const assignStaff: AssignFn = (matchId, role, userId, style) =>
     changeAssignment('assign', matchId, role, userId, style)
   const unassignStaff: UnassignFn = (matchId, role, userId) =>
@@ -382,7 +480,8 @@ export function AssignmentView() {
 
   // Categorize
   const isSlotFullyBooked = (g: MatchGroup) => {
-    const counted = { obs: new Set<number>(), prod: new Set<number>(), cast: new Set<number>() }
+    // Keys are person ids, or the typed name for name-only staff.
+    const counted = { obs: new Set<number | string>(), prod: new Set<number | string>(), cast: new Set<number | string>() }
     g.matches.forEach(m => {
       const pw = m.productionWorkflow
       if (!pw) return
@@ -390,6 +489,10 @@ export function AssignmentView() {
       assignedIds(pw.assignedProducers).forEach(id => counted.prod.add(id))
       assignedIds(pw.assignedDirectors).forEach(id => counted.prod.add(id))
       pw.assignedCasters?.forEach(c => { const id = getUserId(c.user); if (id) counted.cast.add(id) })
+      pw.placeholderStaff?.forEach(p => {
+        const set = p.role === 'observer' ? counted.obs : p.role === 'caster' ? counted.cast : counted.prod
+        set.add(`name:${p.name.toLowerCase()}`)
+      })
     })
     return counted.obs.size >= 1 && counted.prod.size >= 1 && counted.cast.size >= 2
   }
@@ -405,6 +508,7 @@ export function AssignmentView() {
   const needsWork = matchGroups.filter(g => !isSlotFullyBooked(g))
 
   return (
+    <PlaceholderContext.Provider value={placeholderActions}>
     <div className="assignment-v2">
       <div className="assignment-v2__header">
         <h2>Staff Assignment</h2>
@@ -456,5 +560,6 @@ export function AssignmentView() {
         </>
       )}
     </div>
+    </PlaceholderContext.Provider>
   )
 }

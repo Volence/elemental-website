@@ -57,7 +57,7 @@ export async function recoverTimers(): Promise<void> {
 
     if (lobby.status === 'MAP_VOTE' && lobby.mapVote?.voteDeadline) {
       const delay = new Date(lobby.mapVote.voteDeadline).getTime() - now
-      registerTimer(timerKey(lobby.id, 'mapvote'), Math.max(delay, EXPIRED_DELAY), () => finalizeMapVote(lobby.id))
+      registerTimer(timerKey(lobby.id, 'mapvote'), Math.max(delay, EXPIRED_DELAY), async () => { await finalizeMapVote(lobby.id) })
     }
 
     if (lobby.status === 'BANNING' && lobby.banState?.banDeadline) {

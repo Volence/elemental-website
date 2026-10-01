@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { buildProductionSchedule, postProductionSchedule } from '@/discord/services/productionSchedulePost'
 import { postIsFromEarlierWeek } from '@/utilities/productionSchedulePost'
-import { authenticateWithAccess, requireStaffManagerAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 
 /**
  * Weekly broadcast schedule post.
@@ -10,15 +10,16 @@ import { authenticateWithAccess, requireStaffManagerAccess } from '@/utilities/a
  *         and what is currently posted.
  * POST -> { mode: 'update' | 'new' } sends or edits the Discord messages.
  *
- * Production managers only (admin or staff-manager).
+ * Production leads (and staff, who read as lead everywhere) - the same people who see the
+ * Schedule Builder tab.
  */
 
 async function authorize(_request: NextRequest) {
   const auth = await authenticateWithAccess()
   if (!auth.success) return { ok: false as const, response: auth.response }
   const { payload, user, access } = auth.data
-  const staffCheck = requireStaffManagerAccess(access)
-  if (staffCheck) return { ok: false as const, response: staffCheck }
+  const leadCheck = requireDepartment(access, 'production', 'lead')
+  if (leadCheck) return { ok: false as const, response: leadCheck }
   return { ok: true as const, payload, user }
 }
 

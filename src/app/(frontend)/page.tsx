@@ -14,6 +14,7 @@ import { getTierFromRating } from '@/utilities/tierColors'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import { ParticleBackground } from '@/components/ParticleBackground'
 import { ParallaxHero } from '@/components/ParallaxHero'
+import { ON_BROADCAST_SCHEDULE } from '@/utilities/productionCoverage'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -65,11 +66,7 @@ export default async function HomePage() {
               greater_than_equal: today.toISOString(),
             },
           },
-          {
-            'productionWorkflow.includeInSchedule': {
-              equals: true,
-            },
-          },
+          ...ON_BROADCAST_SCHEDULE,
         ],
       },
       sort: 'date',

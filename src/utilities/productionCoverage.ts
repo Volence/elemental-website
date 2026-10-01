@@ -8,6 +8,8 @@
  * as short-staffed. A lone director still counts as partial coverage.
  */
 
+import type { Where } from 'payload'
+
 type Rel = number | string | { id?: number | string | null } | null | undefined
 
 export interface ProductionRoles {
@@ -15,6 +17,12 @@ export interface ProductionRoles {
   assignedProducers?: Rel[] | null
   assignedDirectors?: Rel[] | null
   assignedCasters?: Array<{ user?: Rel }> | null
+  /** Name-only staff for someone who could not sign up; they count toward coverage like anyone. */
+  placeholderStaff?: Array<{ role?: string | null; name?: string | null }> | null
+}
+
+function placeholderCount(pw: ProductionRoles, role: string): number {
+  return (pw.placeholderStaff ?? []).filter((p) => p?.role === role && p?.name?.trim()).length
 }
 
 export type CoverageStatus = 'none' | 'partial' | 'full'
@@ -39,10 +47,10 @@ function casterIds(pw: ProductionRoles): number[] {
 }
 
 export function computeCoverageStatus(pw: ProductionRoles): CoverageStatus {
-  const observers = roleIds(pw.assignedObservers).length
-  const producers = roleIds(pw.assignedProducers).length
-  const directors = roleIds(pw.assignedDirectors).length
-  const casters = casterIds(pw).length
+  const observers = roleIds(pw.assignedObservers).length + placeholderCount(pw, 'observer')
+  const producers = roleIds(pw.assignedProducers).length + placeholderCount(pw, 'producer')
+  const directors = roleIds(pw.assignedDirectors).length + placeholderCount(pw, 'director')
+  const casters = casterIds(pw).length + placeholderCount(pw, 'caster')
 
   if (
     observers >= COVERAGE_MINIMUMS.observers &&
@@ -64,3 +72,15 @@ export function producerDirectorOverlap(pw: ProductionRoles): number[] {
   const producers = new Set(roleIds(pw.assignedProducers))
   return roleIds(pw.assignedDirectors).filter((id) => producers.has(id))
 }
+
+/**
+ * What "on the broadcast schedule" means everywhere a match is listed as upcoming broadcast: ticked
+ * in the Schedule Builder AND staffed. The builder and the Discord schedule post only show matches
+ * with coverage, so a match that was ticked and then lost its staff vanished from both while still
+ * reading as scheduled on the site, the calendar and the social Coming up list. Spread into a
+ * Payload `and` clause.
+ */
+export const ON_BROADCAST_SCHEDULE: Where[] = [
+  { 'productionWorkflow.includeInSchedule': { equals: true } },
+  { 'productionWorkflow.coverageStatus': { in: ['partial', 'full'] } },
+]

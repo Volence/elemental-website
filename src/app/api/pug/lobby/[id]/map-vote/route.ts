@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { castMapVote, finalizeMapVote } from '@/pug'
-import prisma from '@/lib/prisma'
 import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { hasDepartment } from '@/access'
 
@@ -22,13 +21,14 @@ export async function POST(request: NextRequest, { params }: Params) {
   const isPugAdmin = hasDepartment(access, 'pug')
 
   if (isPugAdmin) {
-    // Cast votes for all players then finalize immediately
-    const players = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
-    for (const p of players) {
-      await castMapVote(lobbyId, p.userId, mapId).catch(() => {})
+    // An admin's click picks the map outright; it is not counted as votes.
+    try {
+      const picked = await finalizeMapVote(lobbyId, Number(mapId))
+      if (!picked) return NextResponse.json({ error: 'The map vote has already ended' }, { status: 409 })
+      return NextResponse.json({ success: true })
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message }, { status: 400 })
     }
-    await finalizeMapVote(lobbyId)
-    return NextResponse.json({ success: true })
   }
 
   try {

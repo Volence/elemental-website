@@ -2,6 +2,7 @@ import type { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { ON_BROADCAST_SCHEDULE } from '@/utilities/productionCoverage'
 
 // Event type emojis
 const EVENT_TYPE_EMOJI: Record<string, string> = {
@@ -100,7 +101,7 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
         and: [
           { date: { greater_than_equal: now.toISOString() } },
           { date: { less_than: sixtyDaysFromNow.toISOString() } },
-          { 'productionWorkflow.includeInSchedule': { equals: true } },
+          ...ON_BROADCAST_SCHEDULE,
           { status: { not_equals: 'complete' } },
         ],
       },
@@ -330,7 +331,7 @@ export async function updateCalendarChannel(): Promise<void> {
         and: [
           { date: { greater_than_equal: now.toISOString() } },
           { date: { less_than: sixtyDaysFromNow.toISOString() } },
-          { 'productionWorkflow.includeInSchedule': { equals: true } },
+          ...ON_BROADCAST_SCHEDULE,
           { status: { not_equals: 'complete' } },
         ],
       },

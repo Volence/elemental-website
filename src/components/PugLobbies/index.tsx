@@ -163,6 +163,25 @@ function SpectatorPanel({
   )
 }
 
+/** Names for the map vote candidates, so the Force Map dropdown is not a list of ids. */
+function useMapNames(ids: number[] | undefined): Record<number, string> {
+  const [names, setNames] = useState<Record<number, string>>({})
+  const key = ids?.join(',') ?? ''
+  useEffect(() => {
+    if (!key) return
+    let cancelled = false
+    fetch(`/api/maps?where[id][in]=${key}&depth=0&limit=10`, { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.docs) return
+        setNames(Object.fromEntries(data.docs.map((m: { id: number; name: string }) => [m.id, m.name])))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [key])
+  return names
+}
+
 function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
   lobby: Lobby
   onAction: (lobbyId: number, path: string, body: Record<string, any>) => Promise<void>
@@ -170,6 +189,8 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
   onSpectatorsChange: (next: NonNullable<Lobby['spectators']>) => void
 }) {
   const confirm = useConfirm()
+  const mapNames = useMapNames(lobby.status === 'MAP_VOTE' ? lobby.mapVote?.candidates : undefined)
+  const mapLabel = (id: number) => mapNames[id] ?? `Map #${id}`
   const team1 = lobby.players.filter((p) => p.team === 1)
   const team2 = lobby.players.filter((p) => p.team === 2)
   const unassigned = lobby.players.filter((p) => p.team == null)
@@ -300,7 +321,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
         <div style={{ marginTop: 16, padding: 12, background: 'rgba(168,85,247,0.06)', borderRadius: 8, border: '1px solid rgba(168,85,247,0.15)' }}>
           <div style={{ fontSize: 12, color: '#c084fc', fontWeight: 600, marginBottom: 4 }}>Map Vote</div>
           <div style={{ fontSize: 12, color: '#94a3b8' }}>
-            {Object.keys(lobby.mapVote.votes ?? {}).length} vote(s) in - Candidates: {lobby.mapVote.candidates.map((id) => `#${id}`).join(', ')}
+            {Object.keys(lobby.mapVote.votes ?? {}).length} vote(s) in - Candidates: {lobby.mapVote.candidates.map(mapLabel).join(', ')}
           </div>
         </div>
       )}
@@ -356,7 +377,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
           >
             <option value="">Force Map...</option>
             {lobby.mapVote.candidates.map((mapId) => (
-              <option key={mapId} value={mapId}>Map #{mapId}</option>
+              <option key={mapId} value={mapId}>{mapLabel(mapId)}</option>
             ))}
           </select>
         )}

@@ -979,6 +979,7 @@ export async function syncTeamData(
               assignedProducers: [],
               assignedDirectors: [],
               assignedCasters: [],
+              placeholderStaff: [],
               coverageStatus: 'none',
               dateChanged: true,
               previousDate: existing.date,

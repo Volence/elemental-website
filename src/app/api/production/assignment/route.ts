@@ -7,6 +7,8 @@ import { withAssignment, withoutAssignment, type StaffRole } from '@/utilities/p
  * Assign or unassign one person on one match, from the Assignment view.
  *
  * POST { matchId, role: 'observer' | 'producer' | 'director' | 'caster', userId, style?, action: 'assign' | 'unassign' }
+ * POST { matchId, role, name, action: 'add-placeholder' }   - name-only staff, for someone who could not sign up
+ * POST { matchId, placeholderId, action: 'remove-placeholder' }
  * -> the match at depth 2.
  *
  * The view used to PATCH the match with the production workflow it loaded when the page opened,
@@ -25,6 +27,34 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}))
     const matchId = Number(body?.matchId)
+
+    if (body?.action === 'add-placeholder' || body?.action === 'remove-placeholder') {
+      const role = body?.role as StaffRole
+      const name = typeof body?.name === 'string' ? body.name.trim().slice(0, 80) : ''
+      const placeholderId = typeof body?.placeholderId === 'string' ? body.placeholderId : ''
+      const adding = body.action === 'add-placeholder'
+      if (!Number.isInteger(matchId) || (adding ? !ROLES.includes(role) || !name : !placeholderId)) {
+        return NextResponse.json({ message: adding ? 'Expected matchId, role and name' : 'Expected matchId and placeholderId' }, { status: 400 })
+      }
+      await withKeyedLock(`match:${matchId}`, async () => {
+        const match = await payload.findByID({ collection: 'matches', id: matchId, depth: 0, overrideAccess: true })
+        const pw = (match as any).productionWorkflow || {}
+        const current: Array<{ id?: string; role: string; name: string }> = pw.placeholderStaff ?? []
+        const placeholderStaff = adding
+          ? [...current, { role, name }]
+          : current.filter((p) => p.id !== placeholderId)
+        await payload.update({
+          collection: 'matches',
+          id: matchId,
+          data: { productionWorkflow: { ...pw, placeholderStaff } },
+          user,
+          overrideAccess: false,
+        })
+      })
+      const doc = await payload.findByID({ collection: 'matches', id: matchId, depth: 2, overrideAccess: true })
+      return NextResponse.json(doc)
+    }
+
     const userId = Number(body?.userId)
     const role = body?.role as StaffRole
     const action = body?.action

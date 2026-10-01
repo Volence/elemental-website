@@ -5,7 +5,7 @@ import { findValidAssignment } from './roleAssignment'
 import { selectCaptains } from './captainSelection'
 import { DRAFT_PICK_ORDER, getNextPickTeam, isDraftComplete } from './draftEngine'
 import { drawMapCandidates, resolveMapVote } from './mapVote'
-import { applyBan, getNextBanTeam } from './banPhase'
+import { applyBan, getNextBanTeam, normalizeHeroRole, type HeroRoleMap } from './banPhase'
 import { calculateRatingUpdates } from './mmr'
 import { applyEscalatingBan } from './cooldownBans'
 import { processQueue } from './queueProcessor'
@@ -615,6 +615,7 @@ async function advanceToMapVote(lobbyId: number): Promise<void> {
   const eligibleIds: number[] = allEntries.map((m) => (typeof m === 'object' ? m.id : m))
 
   if (eligibleIds.length < 3) {
+    await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'BANNING' } })
     await advanceToBanning(lobbyId)
     return
   }
@@ -622,7 +623,7 @@ async function advanceToMapVote(lobbyId: number): Promise<void> {
   const voteDeadline = new Date(Date.now() + MAP_VOTE_TIMEOUT_MS)
 
   await prisma.pugMapVote.create({ data: { lobbyId, candidates, votes: {}, voteDeadline } })
-  registerTimer(timerKey(lobbyId, 'mapvote'), MAP_VOTE_TIMEOUT_MS, () => finalizeMapVote(lobbyId))
+  registerTimer(timerKey(lobbyId, 'mapvote'), MAP_VOTE_TIMEOUT_MS, async () => { await finalizeMapVote(lobbyId) })
 }
 
 export async function castMapVote(lobbyId: number, userId: number, mapId: number): Promise<void> {
@@ -632,41 +633,62 @@ export async function castMapVote(lobbyId: number, userId: number, mapId: number
   if (!player) throw new Error('User is not a player in this lobby')
   const mapVote = await prisma.pugMapVote.findUniqueOrThrow({ where: { lobbyId } })
   if (!mapVote.candidates.includes(mapId)) throw new Error('Map not in candidates')
-  const votes = mapVote.votes as Record<string, number>
-  votes[String(userId)] = mapId
-  await prisma.pugMapVote.update({ where: { lobbyId }, data: { votes } })
+
+  // Merge this one vote into the stored record in a single statement. Reading the record, adding
+  // the vote and writing it back lost votes whenever two players clicked at the same moment.
+  const rows = await prisma.$queryRaw<Array<{ votes: Record<string, number> }>>`
+    UPDATE pug_map_votes
+    SET votes = votes || jsonb_build_object(${String(userId)}::text, ${mapId}::int), "updatedAt" = now()
+    WHERE "lobbyId" = ${lobbyId}
+    RETURNING votes`
+  const votes = rows[0]?.votes ?? {}
 
   // Early-advance: once every player has voted, resolve immediately instead of
-  // waiting out the full countdown. finalizeMapVote re-checks status so a late
-  // timer firing is a harmless no-op.
+  // waiting out the full countdown. finalizeMapVote claims the phase, so only one caller wins.
   const playerCount = await prisma.pugLobbyPlayer.count({ where: { lobbyId } })
   if (Object.keys(votes).length >= playerCount) {
-    cancelTimer(timerKey(lobbyId, 'mapvote'))
     await finalizeMapVote(lobbyId)
   }
 }
 
-export async function finalizeMapVote(lobbyId: number): Promise<void> {
-  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
-  if (!lobby || lobby.status !== 'MAP_VOTE') return
+/**
+ * Ends the map vote. `overrideMapId` is an admin's pick and wins outright; otherwise the vote
+ * tally decides. Returns false when the lobby had already left the map vote (the timer, the last
+ * vote and an admin pick can all race here, and only the first may pick the map).
+ */
+export async function finalizeMapVote(lobbyId: number, overrideMapId?: number): Promise<boolean> {
+  const mapVote = await prisma.pugMapVote.findUnique({ where: { lobbyId } })
+  if (!mapVote) return false
+  if (overrideMapId !== undefined && !mapVote.candidates.includes(overrideMapId)) {
+    throw new Error('Map not in candidates')
+  }
 
-  const mapVote = await prisma.pugMapVote.findUniqueOrThrow({ where: { lobbyId } })
+  const claimed = await prisma.pugLobby.updateMany({
+    where: { id: lobbyId, status: 'MAP_VOTE' },
+    data: { status: 'BANNING' },
+  })
+  if (claimed.count === 0) return false
+  cancelTimer(timerKey(lobbyId, 'mapvote'))
+
+  // Re-read after the claim so a vote that landed just before it still counts.
+  const latest = await prisma.pugMapVote.findUniqueOrThrow({ where: { lobbyId } })
   const votes: Record<number, number> = {}
-  for (const [uid, mid] of Object.entries(mapVote.votes as Record<string, number>)) {
+  for (const [uid, mid] of Object.entries(latest.votes as Record<string, number>)) {
     votes[parseInt(uid)] = mid
   }
-  const selectedMapId = resolveMapVote(mapVote.candidates, votes)
+  const selectedMapId = overrideMapId ?? resolveMapVote(latest.candidates, votes)
   await prisma.pugMapVote.update({ where: { lobbyId }, data: { selectedMapId } })
 
   await advanceToBanning(lobbyId)
+  return true
 }
 
+/** Opens the ban phase. The caller has already moved the lobby to BANNING. */
 async function advanceToBanning(lobbyId: number): Promise<void> {
   const banDeadline = new Date(Date.now() + BAN_TIMEOUT_MS)
   await prisma.pugBanState.create({
     data: { lobbyId, currentBanTeam: 2, banNumber: 1, banDeadline, bans: [] },
   })
-  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'BANNING' } })
   registerTimer(timerKey(lobbyId, 'ban'), BAN_TIMEOUT_MS, () => finalizeBan(lobbyId))
 }
 
@@ -688,10 +710,11 @@ export async function makeBan(
 
   const payload = await getPayload({ config: configPromise })
   const heroes = await payload.find({ collection: 'heroes', overrideAccess: true, limit: 200 })
-  const heroRoles: Record<number, 'tank' | 'dps' | 'support'> = {}
+  const heroRoles: HeroRoleMap = {}
   const heroNames: Record<number, string> = {}
   for (const h of heroes.docs as any[]) {
-    heroRoles[h.id] = h.role === 'dps' ? 'dps' : h.role
+    const role = normalizeHeroRole(h.role)
+    if (role) heroRoles[h.id] = role
     heroNames[h.id] = h.name
   }
 

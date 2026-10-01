@@ -57,6 +57,7 @@ export interface ScheduleMatch {
     assignedProducers?: Array<SchedulePerson | number | null> | null
     assignedDirectors?: Array<SchedulePerson | number | null> | null
     assignedCasters?: Array<{ user?: SchedulePerson | number | null }> | null
+    placeholderStaff?: Array<{ role?: string | null; name?: string | null }> | null
   } | null
 }
 
@@ -109,10 +110,21 @@ function roleLine(
   people: Array<SchedulePerson | number | null> | null | undefined,
   render: (p: SchedulePerson | number) => string,
   fallback: string | null = 'TBD',
+  extra: string[] = [],
 ): string | null {
-  const names = (people ?? []).filter((p): p is SchedulePerson | number => p != null).map(render)
+  const names = [...(people ?? []).filter((p): p is SchedulePerson | number => p != null).map(render), ...extra]
   if (names.length === 0) return fallback === null ? null : `${label}: ${fallback}`
   return `${names.length > 1 ? label + 's' : label}: ${names.join(' & ')}`
+}
+
+/**
+ * Name-only staff for one role (someone who works the match but could not sign up). Shown as the
+ * typed name, with no @, so nobody gets pinged.
+ */
+function placeholderNames(match: ScheduleMatch, role: string): string[] {
+  return (match.productionWorkflow?.placeholderStaff ?? [])
+    .filter((p) => p?.role === role && p?.name?.trim())
+    .map((p) => p.name!.trim())
 }
 
 /** The ELMT side of the match, from the new fields, then the legacy one. */
@@ -186,18 +198,21 @@ function selectedMatches(matches: ScheduleMatch[]): ScheduleMatch[] {
 
 function staffSection(match: ScheduleMatch, style: MentionStyle): string {
   const pw = match.productionWorkflow ?? {}
-  const casters = pw.assignedCasters?.map((c) => mention(c.user, style)).filter((s) => s !== 'TBD')
+  const casters = [
+    ...(pw.assignedCasters ?? []).map((c) => mention(c.user, style)).filter((s) => s !== 'TBD'),
+    ...placeholderNames(match, 'caster'),
+  ]
   return [
     `${discordTimestamp(match.date)}:`,
     '',
     `${withOrgPrefix(homeTeamName(match))} vs ${opponentName(match)}`,
     `FACEIT Lobby: ${match.faceitLobby || LOBBY_PLACEHOLDER}`,
     '',
-    roleLine('Observer', pw.assignedObservers, (p) => mention(p, style)),
-    roleLine('Producer', pw.assignedProducers, (p) => mention(p, style)),
+    roleLine('Observer', pw.assignedObservers, (p) => mention(p, style), 'TBD', placeholderNames(match, 'observer')),
+    roleLine('Producer', pw.assignedProducers, (p) => mention(p, style), 'TBD', placeholderNames(match, 'producer')),
     // Director is optional: no line at all rather than a standing TBD.
-    roleLine('Director', pw.assignedDirectors, (p) => mention(p, style), null),
-    `Casters: ${casters && casters.length > 0 ? casters.join(' & ') : 'TBD'}`,
+    roleLine('Director', pw.assignedDirectors, (p) => mention(p, style), null, placeholderNames(match, 'director')),
+    `Casters: ${casters.length > 0 ? casters.join(' & ') : 'TBD'}`,
     '',
   ]
     .filter((line): line is string => line !== null)
@@ -224,7 +239,8 @@ function publicSection(match: ScheduleMatch, defaultLeague: string): string {
   const division = divisionFromRating(team?.rating) ?? 'Open'
   const leagueIsTier = FACEIT_DIVISIONS.some((d) => match.league?.toLowerCase() === d.toLowerCase())
   const league = match.league && !leagueIsTier ? match.league : defaultLeague
-  const casters = pw.assignedCasters?.map((c) => personName(c.user))
+  const casters = [...(pw.assignedCasters ?? []).map((c) => personName(c.user)), ...placeholderNames(match, 'caster')]
+  const director = roleLine('Director', pw.assignedDirectors, personName, null, placeholderNames(match, 'director'))
   return [
     '─────────────────────────────────────────',
     '',
@@ -232,10 +248,10 @@ function publicSection(match: ScheduleMatch, defaultLeague: string): string {
     `🌐 ${region} / ${division} • ${league}`,
     `🕐 ${discordTimestamp(match.date)}`,
     `🎬 Stream: ${STREAM_URL}`,
-    `👁️ ${roleLine('Observer', pw.assignedObservers, personName)}`,
-    `📹 ${roleLine('Producer', pw.assignedProducers, personName)}`,
-    ...(roleLine('Director', pw.assignedDirectors, personName, null) ? [`🎛️ ${roleLine('Director', pw.assignedDirectors, personName, null)}`] : []),
-    `🎙️ Casters: ${casters && casters.length > 0 ? casters.join(' & ') : 'TBD'}`,
+    `👁️ ${roleLine('Observer', pw.assignedObservers, personName, 'TBD', placeholderNames(match, 'observer'))}`,
+    `📹 ${roleLine('Producer', pw.assignedProducers, personName, 'TBD', placeholderNames(match, 'producer'))}`,
+    ...(director ? [`🎛️ ${director}`] : []),
+    `🎙️ Casters: ${casters.length > 0 ? casters.join(' & ') : 'TBD'}`,
     `🔗 FACEIT Lobby: ${match.faceitLobby || LOBBY_PLACEHOLDER}`,
     '',
   ].join('\n')
@@ -304,6 +320,7 @@ function assignmentKey(match: ScheduleMatch): string {
     ids(pw.assignedProducers as any),
     ids(pw.assignedDirectors as any),
     casters,
+    (pw.placeholderStaff ?? []).map((p) => `${p?.role}:${p?.name}`).join(','),
   ].join('|')
 }
 
