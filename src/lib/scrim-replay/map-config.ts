@@ -373,6 +373,11 @@ export const MAP_CONFIGS: Record<string, MapConfig> = {
     primary: makeSubMap('Midtown', 'midtown', { a: 28.04013022811469, b: -0.03964458492668173, c: -0.06612392844865067, d: 27.97397057309509, tx: 3312.123475316486, ty: 3538.97500825136, imageWidth: 8192, imageHeight: 8192 }),
     subMaps: [],
   },
+  'Neon Junction': {
+    type: 'Hybrid',
+    primary: null, // New map (2026-10) - no calibration data yet
+    subMaps: [],
+  },
   'Numbani': {
     type: 'Hybrid',
     primary: makeSubMap('Numbani', 'numbani', { a: 25.02650207399714, b: -0.08242424823834578, c: -0.01699850221309924, d: 25.01515974594845, tx: 2042.774323647489, ty: 3845.368919862618, imageWidth: 8192, imageHeight: 8192 }),
