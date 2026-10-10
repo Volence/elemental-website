@@ -6,7 +6,8 @@ import { getFinalRoundStats } from '@/lib/scrim-parser/data-access'
 import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
 import { sumStatByRound } from '@/lib/scrim-parser/round-stats'
 import { batchCalculateStatsForMap } from '@/lib/scrim-parser/batch-stats'
-import { heroRoleMapping, getRoleForHero } from '@/lib/scrim-parser/heroes'
+import { getRoleForHero } from '@/lib/scrim-parser/heroes'
+import { mapPlayedAt } from '@/lib/scrim-parser/hero-era'
 
 // ── Display Name Resolution ──
 // Resolves raw log team names → Payload Team names and player names → Person names
@@ -195,6 +196,7 @@ export async function GET(req: NextRequest) {
     lucioUltStarts,
     lucioUltEnds,
     allKillsForAjax,
+    playedAt,
   ] = await Promise.all([
     prisma.scrimMatchStart.findFirst({
       where: { mapDataId: mapId },
@@ -253,6 +255,7 @@ export async function GET(req: NextRequest) {
       where: { mapDataId: mapId },
       select: { match_time: true, victim_name: true, victim_hero: true },
     }),
+    mapPlayedAt(mapId),
   ])
 
   if (!matchStart) {
@@ -385,7 +388,7 @@ export async function GET(req: NextRequest) {
       team: dn.teamName(p.player_team),
       hero: p.player_hero,
       personId: personIdMap.get(p.player_name) ?? null,
-      role: (heroRoleMapping as Record<string, string>)[p.player_hero] ?? 'Damage',
+      role: getRoleForHero(p.player_hero, playedAt),
       eliminations: p.eliminations,
       assists: p.defensive_assists + p.offensive_assists,
       deaths: p.deaths,
@@ -897,7 +900,7 @@ async function getCompareData(mapId: number) {
 
 
 async function getChartsData(mapId: number) {
-  const [matchStart, playerStats] = await Promise.all([
+  const [matchStart, playerStats, playedAt] = await Promise.all([
     prisma.scrimMatchStart.findFirst({
       where: { mapDataId: mapId },
       select: { team_1_name: true, team_2_name: true },
@@ -913,6 +916,7 @@ async function getChartsData(mapId: number) {
         hero_damage_dealt: true,
       },
     }),
+    mapPlayedAt(mapId),
   ])
 
   if (!matchStart) {
@@ -935,7 +939,7 @@ async function getChartsData(mapId: number) {
   const finalStats = playerStats.filter(s => s.round_number === maxRound)
 
   for (const stat of finalStats) {
-    const role = getRoleForHero(stat.player_hero)
+    const role = getRoleForHero(stat.player_hero, playedAt)
     if (stat.player_team === team1) {
       roleData[role].team1 += stat.final_blows
     } else {

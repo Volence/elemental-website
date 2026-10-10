@@ -342,8 +342,9 @@ export async function batchCalculateStatsForMap(
     ultEndsByPlayer.get(u.player_name)!.push(u)
   }
 
-  // Import hero role mapping
-  const { heroRoleMapping } = await import('./heroes')
+  const { getRoleForHero } = await import('./heroes')
+  const { mapPlayedAt } = await import('./hero-era')
+  const playedAt = await mapPlayedAt(mapId)
 
   const results: BatchCalculatedPlayerStats[] = []
 
@@ -354,7 +355,7 @@ export async function batchCalculateStatsForMap(
 
     // Most played hero
     const mostPlayedHero = playerStats.sort((a, b) => b.hero_time_played - a.hero_time_played)[0].player_hero
-    const heroRole = (heroRoleMapping as Record<string, string>)[mostPlayedHero] ?? 'Damage'
+    const heroRole = getRoleForHero(mostPlayedHero, playedAt)
 
     // First pick / first death
     let firstPickCount = 0

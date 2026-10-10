@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Loader2, Play, Pause, SkipBack, SkipForward, Eye, EyeOff, Crosshair, Zap, Skull, ZoomIn, ZoomOut, Maximize2, Camera, Swords } from 'lucide-react'
+import { getRoleForHero, type HeroRole } from '@/lib/scrim-parser/heroes'
 import {
   type MapTransform,
   type SubMapConfig,
@@ -73,6 +74,7 @@ type PositionData = {
   timeline: TimelineFrame[]
   events: TimelineEvent[]
   totalDuration: number
+  playedAt?: string | null
   playerStats?: Record<string, {
     name: string
     team: string
@@ -126,7 +128,8 @@ const HERO_ABBREVS: Record<string, string> = {
   'Winston': 'Win', 'Wrecking Ball': 'WB', 'Zarya': 'Zar',
   'Zenyatta': 'Zen', 'Jetpack Cat': 'JPC', 'Domina': 'Dom',
   'Freja': 'Fre', 'Vendetta': 'Vnd', 'Mizuki': 'Miz', 'Wuyang': 'Wu',
-  'Anran': 'Anr', 'Emre': 'Emr',
+  'Anran': 'Anr', 'Emre': 'Emr', 'Doctrine': 'Doc', 'D.Mon': 'DMon',
+  'Shion': 'Shi', 'Sierra': 'Sie',
 }
 
 function heroAbbrev(hero: string): string {
@@ -143,24 +146,11 @@ function heroIconFile(hero: string): string {
   return special[hero] || hero.toLowerCase().replace(/[^a-z0-9]/g, '')
 }
 
-/** Hero role for ult economy sorting: tank=0, dps=1, support=2 */
-const HERO_ROLES: Record<string, number> = {
-  // Tanks
-  'D.Va': 0, 'Doomfist': 0, 'Junker Queen': 0, 'Mauga': 0, 'Orisa': 0,
-  'Ramattra': 0, 'Reinhardt': 0, 'Roadhog': 0, 'Sigma': 0, 'Winston': 0,
-  'Wrecking Ball': 0, 'Zarya': 0, 'Hazard': 0, 'Domina': 0,
-  // DPS
-  'Ashe': 1, 'Bastion': 1, 'Cassidy': 1, 'Echo': 1, 'Freja': 1,
-  'Genji': 1, 'Hanzo': 1, 'Junkrat': 1, 'Mei': 1, 'Pharah': 1,
-  'Reaper': 1, 'Sojourn': 1, 'Soldier: 76': 1, 'Sombra': 1, 'Symmetra': 1,
-  'Torbjörn': 1, 'Tracer': 1, 'Venture': 1, 'Widowmaker': 1, 'Vendetta': 1,
-  'Anran': 1, 'Emre': 1,
-  // Support
-  'Ana': 2, 'Baptiste': 2, 'Brigitte': 2, 'Illari': 2, 'Juno': 2,
-  'Kiriko': 2, 'Lifeweaver': 2, 'Lúcio': 2, 'Lucio': 2, 'Mercy': 2,
-  'Moira': 2, 'Zenyatta': 2, 'Mizuki': 2, 'Wuyang': 2, 'Jetpack Cat': 2,
+/** Hero role for ult economy sorting: tank=0, dps=1, support=2, as of the day the map was played */
+const ROLE_ORDER: Record<HeroRole, number> = { Tank: 0, Damage: 1, Support: 2 }
+function heroRole(hero: string, playedAt: string | null | undefined): number {
+  return ROLE_ORDER[getRoleForHero(hero === 'Lucio' ? 'Lúcio' : hero, playedAt ?? null)]
 }
-function heroRole(hero: string): number { return HERO_ROLES[hero] ?? 1 }
 
 // ══════════════════════════════════════════════════════════════════════
 // Utilities
@@ -640,10 +630,10 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
       if (info.team === data.team1) t1players.push(entry); else t2players.push(entry)
     }
     // Sort by role: tank (0) → dps (1) → support (2)
-    t1players.sort((a, b) => heroRole(a.hero) - heroRole(b.hero))
-    t2players.sort((a, b) => heroRole(a.hero) - heroRole(b.hero))
+    t1players.sort((a, b) => heroRole(a.hero, data.playedAt) - heroRole(b.hero, data.playedAt))
+    t2players.sort((a, b) => heroRole(a.hero, data.playedAt) - heroRole(b.hero, data.playedAt))
     return { team1: t1players, team2: t2players }
-  }, [data?.timeline, data?.team1, currentTime])
+  }, [data?.timeline, data?.team1, data?.playedAt, currentTime])
 
   // Snapshot export
   const handleSnapshot = useCallback(() => {

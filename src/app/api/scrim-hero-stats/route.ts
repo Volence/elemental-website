@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { round } from '@/lib/scrim-parser/utils'
 import { loadHeroPortraits, heroNameToSlug } from '@/lib/scrim-parser/heroIcons'
-import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
+import { getRoleForHero, heroBaseName } from '@/lib/scrim-parser/heroes'
+import { heroKeySql, heroKeyWhere } from '@/lib/scrim-parser/hero-era'
 import { getUserScope } from '@/access/scrimScope'
 
 // ────────────────────────────────────────────────────────────────────────
@@ -320,7 +321,7 @@ async function getHeroList(range: string, team: string, scopedScrimIds: number[]
   if (teamFilteredMapIds) {
     rows = await prisma.$queryRaw<HeroListRow[]>`
       SELECT
-        ps.player_hero,
+        ${heroKeySql('ps', 'player_hero')} as player_hero,
         COUNT(DISTINCT ps."mapDataId") as total_maps,
         SUM(ps.eliminations) as total_elims,
         SUM(ps.deaths) as total_deaths,
@@ -331,13 +332,13 @@ async function getHeroList(range: string, team: string, scopedScrimIds: number[]
       FROM scrim_player_stats ps
       WHERE ps.hero_time_played > 0
         AND ps."mapDataId" = ANY(${teamFilteredMapIds}::int[])
-      GROUP BY ps.player_hero
+      GROUP BY 1
       ORDER BY total_maps DESC, total_time DESC
     `
   } else {
     rows = await prisma.$queryRaw<HeroListRow[]>`
       SELECT
-        ps.player_hero,
+        ${heroKeySql('ps', 'player_hero')} as player_hero,
         COUNT(DISTINCT ps."mapDataId") as total_maps,
         SUM(ps.eliminations) as total_elims,
         SUM(ps.deaths) as total_deaths,
@@ -347,18 +348,17 @@ async function getHeroList(range: string, team: string, scopedScrimIds: number[]
         SUM(ps.hero_time_played) as total_time
       FROM scrim_player_stats ps
       WHERE ps.hero_time_played > 0
-      GROUP BY ps.player_hero
+      GROUP BY 1
       ORDER BY total_maps DESC, total_time DESC
     `
   }
 
   const portraits = await loadHeroPortraits()
-  const roleMap = heroRoleMapping as Record<string, string>
 
   const heroes = rows.map((r) => ({
     hero: r.player_hero,
     portrait: portraits.get(heroNameToSlug(r.player_hero)) ?? null,
-    role: roleMap[r.player_hero] ?? 'Damage',
+    role: getRoleForHero(r.player_hero),
     mapsPlayed: Number(r.total_maps),
     totalElims: Number(r.total_elims),
     totalDeaths: Number(r.total_deaths),
@@ -393,8 +393,11 @@ async function getHeroDetail(hero: string, range: string, team: string, scopedSc
     ? { scrimId: { in: scopedScrimIds } }
     : {}
 
+  // `hero` is a stats name: pre-Season 5 Sombra is its own entry (see heroKeyAt)
+  const heroWhere = await heroKeyWhere(hero)
+  const gameHero = heroBaseName(hero)
   const heroStats = await prisma.scrimPlayerStat.findMany({
-    where: { player_hero: hero, hero_time_played: { gt: 0 }, ...teamWhere, ...scrimIdFilter },
+    where: { AND: [heroWhere, { hero_time_played: { gt: 0 }, ...teamWhere, ...scrimIdFilter }] },
     orderBy: { mapDataId: 'asc' },
   }) as unknown as HeroStatRow[]
 
@@ -568,22 +571,22 @@ async function getHeroDetail(hero: string, range: string, team: string, scopedSc
   // ── Hero matchups ──
   const [killedMost, diedToMost] = await Promise.all([
     prisma.$queryRaw<Array<{ hero: string; count: bigint }>>`
-      SELECT victim_hero as hero, COUNT(*) as count
-      FROM scrim_kills
-      WHERE attacker_hero = ${hero}
-        AND "mapDataId" = ANY(${mapDataIds}::int[])
-        AND event_ability != 'Resurrect'
-      GROUP BY victim_hero
+      SELECT ${heroKeySql('k', 'victim_hero')} as hero, COUNT(*) as count
+      FROM scrim_kills k
+      WHERE k.attacker_hero = ${gameHero}
+        AND k."mapDataId" = ANY(${mapDataIds}::int[])
+        AND k.event_ability != 'Resurrect'
+      GROUP BY 1
       ORDER BY count DESC
       LIMIT 10
     `,
     prisma.$queryRaw<Array<{ hero: string; count: bigint }>>`
-      SELECT attacker_hero as hero, COUNT(*) as count
-      FROM scrim_kills
-      WHERE victim_hero = ${hero}
-        AND "mapDataId" = ANY(${mapDataIds}::int[])
-        AND event_ability != 'Resurrect'
-      GROUP BY attacker_hero
+      SELECT ${heroKeySql('k', 'attacker_hero')} as hero, COUNT(*) as count
+      FROM scrim_kills k
+      WHERE k.victim_hero = ${gameHero}
+        AND k."mapDataId" = ANY(${mapDataIds}::int[])
+        AND k.event_ability != 'Resurrect'
+      GROUP BY 1
       ORDER BY count DESC
       LIMIT 10
     `,
@@ -598,7 +601,7 @@ async function getHeroDetail(hero: string, range: string, team: string, scopedSc
   const fbByMethod = await prisma.$queryRaw<Array<{ method: string; count: bigint }>>`
     SELECT event_ability as method, COUNT(*) as count
     FROM scrim_kills
-    WHERE attacker_hero = ${hero}
+    WHERE attacker_hero = ${gameHero}
       AND "mapDataId" = ANY(${mapDataIds}::int[])
       AND event_ability != 'Resurrect'
       AND event_ability != '0'
@@ -614,13 +617,12 @@ async function getHeroDetail(hero: string, range: string, team: string, scopedSc
 
   // Portrait
   const portraits = await loadHeroPortraits()
-  const roleMap = heroRoleMapping as Record<string, string>
 
   return NextResponse.json({
     hero: {
       name: hero,
       portrait: portraits.get(heroNameToSlug(hero)) ?? null,
-      role: roleMap[hero] ?? 'Damage',
+      role: getRoleForHero(hero),
       mapsPlayed: mapDataIds.length,
       totalTime: round(totalTime),
     },

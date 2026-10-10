@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getUserScope } from '@/access/scrimScope'
+import { mapPlayedAt } from '@/lib/scrim-parser/hero-era'
 
 /**
  * GET /api/scrim-positions?mapId=N
@@ -482,5 +483,7 @@ export async function GET(req: NextRequest) {
     events,
     totalDuration,
     playerStats,
+    // Hero roles changed between seasons (Sombra); the viewer sorts by the role of the day
+    playedAt: await mapPlayedAt(mapId),
   })
 }

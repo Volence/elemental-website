@@ -8,7 +8,8 @@
  */
 
 import prisma from '@/lib/prisma'
-import { type HeroName, heroRoleMapping } from './heroes'
+import { getRoleForHero } from './heroes'
+import { mapPlayedAt } from './hero-era'
 import { removeDuplicateRows } from './utils'
 
 /** Priority ordering: Tank > Damage > Support */
@@ -79,6 +80,7 @@ export async function getFinalRoundStats(mapId: number) {
     WHERE ps."mapDataId" = ${mapId}
   `
 
+  const playedAt = await mapPlayedAt(mapId)
   return removeDuplicateRows(rows)
     // Overwatch emits a final player_stat snapshot for every hero a player
     // touched, including heroes hovered or swapped through with no play time.
@@ -88,8 +90,8 @@ export async function getFinalRoundStats(mapId: number) {
     .sort((a, b) => a.player_name.localeCompare(b.player_name))
     .sort(
       (a, b) =>
-        (heroPriority[heroRoleMapping[a.player_hero as HeroName]] ?? 3) -
-        (heroPriority[heroRoleMapping[b.player_hero as HeroName]] ?? 3)
+        (heroPriority[getRoleForHero(a.player_hero, playedAt)] ?? 3) -
+        (heroPriority[getRoleForHero(b.player_hero, playedAt)] ?? 3)
     )
     .sort((a, b) => a.player_team.localeCompare(b.player_team))
 }

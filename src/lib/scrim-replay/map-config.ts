@@ -346,6 +346,11 @@ export const MAP_CONFIGS: Record<string, MapConfig> = {
     primary: makeSubMap('Watchpoint: Gibraltar', 'watchpoint-gibraltar', { a: 24.7701277291063, b: 0.002806409230801304, c: 0.01324758313019491, d: 24.79804129714406, tx: 2114.043692347036, ty: 4094.910547174829, imageWidth: 8192, imageHeight: 8192 }),
     subMaps: [],
   },
+  'Watchpoint: Grímsvötn': {
+    type: 'Escort',
+    primary: null, // New map (2026-10) - no calibration data yet
+    subMaps: [],
+  },
 
   // ── Hybrid ──
   'Blizzard World': {
@@ -445,6 +450,9 @@ const MAP_ALIASES: Record<string, string> = {
   'Lijiang Tower (Lunar New Year)': 'Lijiang Tower',
   'Esperanca': 'Esperança',
   'Paraiso': 'Paraíso',
+  'Grímsvötn': 'Watchpoint: Grímsvötn',
+  'Grimsvotn': 'Watchpoint: Grímsvötn',
+  'Watchpoint: Grimsvotn': 'Watchpoint: Grímsvötn',
 }
 
 // ══════════════════════════════════════════════════════════════════════

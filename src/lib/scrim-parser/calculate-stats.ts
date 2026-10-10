@@ -18,7 +18,8 @@
  */
 
 import prisma from '@/lib/prisma'
-import { type HeroName, heroRoleMapping } from './heroes'
+import { getRoleForHero } from './heroes'
+import { mapPlayedAt } from './hero-era'
 import { getPlayerFinalStats } from './data-access'
 import {
   getAverageUltChargeTime,
@@ -87,7 +88,7 @@ export async function calculateStats(
       ? playerStats.sort((a, b) => b.hero_time_played - a.hero_time_played)[0].player_hero
       : 'Unknown'
 
-  const heroRole = heroRoleMapping[mostPlayedHero as HeroName] ?? 'Damage'
+  const heroRole = getRoleForHero(mostPlayedHero, await mapPlayedAt(mapId))
 
   // First pick / first death from fights
   const firstKills = fights.map((f) => f.kills[0])

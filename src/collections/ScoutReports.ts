@@ -294,7 +294,7 @@ export const ScoutReports: CollectionConfig = {
                   name: 'heroPicksText',
                   type: 'textarea',
                   admin: {
-                    placeholder: 'Tank: Orisa→Sigma\nDPS: Widow\nDPS: Sombra→Tracer\nSupport: Lucio\nSupport: Bap→Illari',
+                    placeholder: 'Tank: Orisa→Sigma\nDPS: Widow\nDPS: Genji→Tracer\nSupport: Lucio→Sombra\nSupport: Bap→Illari',
                     description: 'One role per line, use arrows for switches',
                   },
                 },

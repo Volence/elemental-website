@@ -12,6 +12,7 @@ const HERO_SLUG_OVERRIDES: Record<string, string> = {
   'Torbjörn': 'torbjorn',
   'Wrecking Ball': 'wrecking-ball',
   'Junker Queen': 'junker-queen',
+  'Sombra (Damage)': 'sombra', // pre-Season 5 Sombra, counted apart (LEGACY_SOMBRA)
 }
 
 /**

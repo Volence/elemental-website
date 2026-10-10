@@ -5,7 +5,7 @@
 
 export type HeroName =
   | 'Ana' | 'Anran' | 'Ashe' | 'Baptiste' | 'Bastion' | 'Brigitte'
-  | 'Cassidy' | 'D.Mon' | 'D.Va' | 'Domina' | 'Doomfist' | 'Echo' | 'Emre'
+  | 'Cassidy' | 'D.Mon' | 'D.Va' | 'Doctrine' | 'Domina' | 'Doomfist' | 'Echo' | 'Emre'
   | 'Freja' | 'Genji' | 'Hanzo' | 'Hazard' | 'Illari' | 'Jetpack Cat'
   | 'Junker Queen' | 'Junkrat' | 'Juno' | 'Kiriko' | 'Lifeweaver'
   | 'Lúcio' | 'Mauga' | 'Mei' | 'Mercy' | 'Mizuki' | 'Moira'
@@ -26,6 +26,7 @@ export const heroRoleMapping: Record<string, HeroRole> = {
   'Brigitte': 'Support',
   'Cassidy': 'Damage',
   'D.Mon': 'Tank',
+  'Doctrine': 'Support',
   'Domina': 'Tank',
   'Doomfist': 'Tank',
   'D.Va': 'Tank',
@@ -59,7 +60,7 @@ export const heroRoleMapping: Record<string, HeroRole> = {
   'Sigma': 'Tank',
   'Sojourn': 'Damage',
   'Soldier: 76': 'Damage',
-  'Sombra': 'Damage',
+  'Sombra': 'Support',
   'Symmetra': 'Damage',
   'Torbjörn': 'Damage',
   'Tracer': 'Damage',
@@ -73,7 +74,35 @@ export const heroRoleMapping: Record<string, HeroRole> = {
   'Zenyatta': 'Support',
 }
 
-/** Get the role for a hero name, defaulting to 'Damage' for unknown heroes */
-export function getRoleForHero(hero: string): HeroRole {
-  return heroRoleMapping[hero] ?? 'Damage'
+/**
+ * Sombra moved from Damage to Support in Season 5. Her games from before then are a different
+ * hero as far as stats go, so they are counted apart, under LEGACY_SOMBRA. Scrim dates are
+ * stored as plain days, so the cutoff is a day too.
+ */
+export const SOMBRA_SUPPORT_SINCE = '2026-10-06'
+export const LEGACY_SOMBRA = 'Sombra (Damage)'
+
+function dayOf(playedAt: Date | string): string {
+  return (typeof playedAt === 'string' ? new Date(playedAt) : playedAt).toISOString().slice(0, 10)
+}
+
+/** The stats name for a hero played on `playedAt`: pre-Season 5 Sombra is LEGACY_SOMBRA. */
+export function heroKeyAt(hero: string, playedAt: Date | string | null | undefined): string {
+  if (hero === 'Sombra' && playedAt && dayOf(playedAt) < SOMBRA_SUPPORT_SINCE) return LEGACY_SOMBRA
+  return hero
+}
+
+/** The in-game hero behind a stats name, for portraits and icons. */
+export function heroBaseName(key: string): string {
+  return key === LEGACY_SOMBRA ? 'Sombra' : key
+}
+
+/**
+ * Get the role for a hero name, defaulting to 'Damage' for unknown heroes. Pass when the game was
+ * played to get the role the hero had then; a LEGACY_SOMBRA stats name is Damage either way.
+ */
+export function getRoleForHero(hero: string, playedAt?: Date | string | null): HeroRole {
+  const key = playedAt === undefined ? hero : heroKeyAt(hero, playedAt)
+  if (key === LEGACY_SOMBRA) return 'Damage'
+  return heroRoleMapping[key] ?? 'Damage'
 }

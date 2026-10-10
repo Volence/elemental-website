@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 // groupKillsIntoFights replaced with inline batch query for performance
-import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
+import { getRoleForHero, heroKeyAt, heroRoleMapping } from '@/lib/scrim-parser/heroes'
 import { assessConfidence } from '@/lib/scrim-parser/confidence'
 import { computeUltEconomy, type UltEconomyMapInput } from '@/lib/scrim-parser/ult-economy'
 import { processFightStats, type FightStatsAnalysis } from '@/lib/scrim-parser/fight-stats'
@@ -409,6 +409,10 @@ export async function GET(req: NextRequest) {
           SELECT tr.person_id FROM teams_roster tr WHERE tr."_parent_id" = ${teamId}
         )
     `
+    // Pre-Season 5 Sombra counts as her own hero (see heroKeyAt)
+    for (const ps of playerStats) {
+      ps.player_hero = heroKeyAt(ps.player_hero, mapDataToScrim.get(ps.mapDataId)?.date)
+    }
 
     // Resolve person names
     const personIds = [...new Set(playerStats.map(p => p.personId).filter(Boolean))] as number[]
@@ -657,7 +661,7 @@ export async function GET(req: NextRequest) {
     const heroPool = Array.from(heroAgg.values())
       .map(h => {
         const total = h.wins + h.losses + h.draws
-        const role = (heroRoleMapping as Record<string, string>)[h.hero] ?? 'Damage'
+        const role = getRoleForHero(h.hero)
         return {
           hero: h.hero,
           role,

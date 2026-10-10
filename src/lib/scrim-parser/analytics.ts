@@ -14,7 +14,8 @@
  */
 
 import prisma from '@/lib/prisma'
-import { type HeroName, heroRoleMapping } from './heroes'
+import { getRoleForHero } from './heroes'
+import { mapPlayedAt } from './hero-era'
 import { getPlayerFinalStats } from './data-access'
 import { groupKillsIntoFights, removeDuplicateRows, round } from './utils'
 
@@ -291,7 +292,7 @@ export async function calculateXFactor(
   const mostPlayedHero = playerStats.sort(
     (a, b) => b.hero_time_played - a.hero_time_played
   )[0].player_hero
-  const heroRole = heroRoleMapping[mostPlayedHero as HeroName] ?? 'Damage'
+  const heroRole = getRoleForHero(mostPlayedHero, await mapPlayedAt(mapId))
 
   const fights = await groupKillsIntoFights(mapId)
   if (fights.length === 0) return 0

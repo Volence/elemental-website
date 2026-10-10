@@ -5,7 +5,8 @@ import { batchCalculateStats } from '@/lib/scrim-parser/batch-stats'
 import { playedMeaningfully } from '@/lib/scrim-parser/player-maps'
 import { resolvePlayerStatsTarget } from '@/lib/scrim-parser/player-identity'
 import { loadHeroPortraits, heroNameToSlug } from '@/lib/scrim-parser/heroIcons'
-import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
+import { getRoleForHero, heroKeyAt } from '@/lib/scrim-parser/heroes'
+import { heroKeySql } from '@/lib/scrim-parser/hero-era'
 import { getUserScope, type UserScope } from '@/access/scrimScope'
 
 // ────────────────────────────────────────────────────────────────────────
@@ -291,10 +292,10 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
           FROM deduped d
         ),
         hero_ranks AS (
-          SELECT merge_key, player_hero,
+          SELECT merge_key, ${heroKeySql('h', 'player_hero')} as player_hero,
             ROW_NUMBER() OVER (PARTITION BY merge_key ORDER BY SUM(hero_time_played) DESC) as rn
-          FROM with_display
-          GROUP BY merge_key, player_hero
+          FROM with_display h
+          GROUP BY merge_key, 2
         )
         SELECT
           wd.display_name,
@@ -343,10 +344,10 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
         FROM deduped d
       ),
       hero_ranks AS (
-        SELECT merge_key, player_hero,
+        SELECT merge_key, ${heroKeySql('h', 'player_hero')} as player_hero,
           ROW_NUMBER() OVER (PARTITION BY merge_key ORDER BY SUM(hero_time_played) DESC) as rn
-        FROM with_display
-        GROUP BY merge_key, player_hero
+        FROM with_display h
+        GROUP BY merge_key, 2
       )
       SELECT
         wd.display_name,
@@ -718,6 +719,8 @@ async function buildPlayerDetailResponse(
   // a final-round row with zero of every counting stat. These pollute the map
   // history and skew per-map averages, so exclude them before aggregating.
   playerMaps = playerMaps.filter(playedMeaningfully)
+  // Pre-Season 5 Sombra counts as her own hero (see heroKeyAt)
+  playerMaps = playerMaps.map((m) => ({ ...m, player_hero: heroKeyAt(m.player_hero, mapInfoMap.get(m.mapDataId)?.scrimDate) }))
   const mapDataIds = [...new Set(playerMaps.map((m) => m.mapDataId))]
 
   // Calculate advanced stats for all maps in batch (4 bulk queries instead of ~10×N)
@@ -949,22 +952,22 @@ async function buildPlayerDetailResponse(
   // ── Hero matchups: killed most / died to most ──
   const [killedMost, diedToMost] = await Promise.all([
     prisma.$queryRaw<Array<{ hero: string; count: bigint }>>`
-      SELECT victim_hero as hero, COUNT(*) as count
-      FROM scrim_kills
-      WHERE attacker_name = ANY(${aliases}::text[])
-        AND "mapDataId" = ANY(${mapDataIds}::int[])
-        AND event_ability != 'Resurrect'
-      GROUP BY victim_hero
+      SELECT ${heroKeySql('k', 'victim_hero')} as hero, COUNT(*) as count
+      FROM scrim_kills k
+      WHERE k.attacker_name = ANY(${aliases}::text[])
+        AND k."mapDataId" = ANY(${mapDataIds}::int[])
+        AND k.event_ability != 'Resurrect'
+      GROUP BY 1
       ORDER BY count DESC
       LIMIT 10
     `,
     prisma.$queryRaw<Array<{ hero: string; count: bigint }>>`
-      SELECT attacker_hero as hero, COUNT(*) as count
-      FROM scrim_kills
-      WHERE victim_name = ANY(${aliases}::text[])
-        AND "mapDataId" = ANY(${mapDataIds}::int[])
-        AND event_ability != 'Resurrect'
-      GROUP BY attacker_hero
+      SELECT ${heroKeySql('k', 'attacker_hero')} as hero, COUNT(*) as count
+      FROM scrim_kills k
+      WHERE k.victim_name = ANY(${aliases}::text[])
+        AND k."mapDataId" = ANY(${mapDataIds}::int[])
+        AND k.event_ability != 'Resurrect'
+      GROUP BY 1
       ORDER BY count DESC
       LIMIT 10
     `,
@@ -1047,10 +1050,9 @@ async function buildPlayerDetailResponse(
     .sort((a, b) => b.total - a.total)
 
   // ── Role time split ──
-  const roleMap = heroRoleMapping as Record<string, string>
   const roleTimeSplit: Record<string, number> = { Tank: 0, Damage: 0, Support: 0 }
   for (const row of playerMaps) {
-    const role = roleMap[row.player_hero] ?? 'Damage'
+    const role = getRoleForHero(row.player_hero)
     roleTimeSplit[role] = (roleTimeSplit[role] ?? 0) + row.hero_time_played
   }
   // Round values
