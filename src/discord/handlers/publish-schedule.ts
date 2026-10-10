@@ -20,7 +20,11 @@ export function parseMessageIds(raw: string | null | undefined): string[] {
 
 /**
  * Bring the thread's set of schedule messages in line with `contents`:
- * edit the ones we already own in order, send extras, delete leftovers.
+ * edit the ones we already own in order and delete leftovers. When the post
+ * needs more messages than it has (it grew past Discord's 2000 characters) or
+ * one of them is gone, the whole post is sent again instead: an extra message
+ * sent on its own lands at the bottom of the channel, far from the first part,
+ * and reads as a schedule missing its first days.
  * Returns the IDs now backing the post.
  */
 export async function syncScheduleMessages(
@@ -28,30 +32,31 @@ export async function syncScheduleMessages(
   existingIds: string[],
   contents: Array<string | Pick<MessageEditOptions, 'content' | 'components'>>,
 ): Promise<string[]> {
-  const ids: string[] = []
-  for (let i = 0; i < contents.length; i++) {
-    const existingId = existingIds[i]
-    let message: Message | null = null
-    if (existingId) {
-      try {
-        const existing = await thread.messages.fetch(existingId)
-        message = await existing.edit(contents[i])
-      } catch {
-        message = null
-      }
-    }
-    if (!message) {
-      message = await thread.send(contents[i] as any)
-    }
-    ids.push(message.id)
+  const existing: Array<Message | null> = []
+  for (const id of existingIds) {
+    existing.push(await thread.messages.fetch(id).catch(() => null))
   }
-  for (const leftover of existingIds.slice(contents.length)) {
-    try {
-      const msg = await thread.messages.fetch(leftover)
-      await msg.delete()
-    } catch {
-      // already gone
+  const owned = existing.slice(0, contents.length)
+  const editInPlace = contents.length <= existingIds.length && owned.every((m) => m !== null)
+
+  const ids: string[] = []
+  if (editInPlace) {
+    for (let i = 0; i < contents.length; i++) {
+      const message = await owned[i]!.edit(contents[i])
+      ids.push(message.id)
     }
+  } else {
+    for (const content of contents) {
+      const message = await thread.send(content as any)
+      ids.push(message.id)
+    }
+  }
+
+  const stale = editInPlace ? existing.slice(contents.length) : existing
+  for (const msg of stale) {
+    await msg?.delete().catch(() => {
+      // already gone
+    })
   }
   return ids
 }
