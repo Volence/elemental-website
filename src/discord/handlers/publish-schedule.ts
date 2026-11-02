@@ -31,13 +31,14 @@ export async function syncScheduleMessages(
   thread: TextChannel | ThreadChannel,
   existingIds: string[],
   contents: Array<string | Pick<MessageEditOptions, 'content' | 'components'>>,
+  { replace = false }: { replace?: boolean } = {},
 ): Promise<string[]> {
   const existing: Array<Message | null> = []
   for (const id of existingIds) {
     existing.push(await thread.messages.fetch(id).catch(() => null))
   }
   const owned = existing.slice(0, contents.length)
-  const editInPlace = contents.length <= existingIds.length && owned.every((m) => m !== null)
+  const editInPlace = !replace && contents.length <= existingIds.length && owned.every((m) => m !== null)
 
   const ids: string[] = []
   if (editInPlace) {

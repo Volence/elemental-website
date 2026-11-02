@@ -66,3 +66,12 @@ describe('syncScheduleMessages', () => {
     expect(history.map((m) => m.content)).toEqual(['A'])
   })
 })
+
+describe('syncScheduleMessages with replace', () => {
+  it('sends the post fresh and deletes the old copy, even when it would fit', async () => {
+    const { channel, history } = fakeChannel(['old A', 'old B', 'chat'])
+    const ids = await syncScheduleMessages(channel, ['1', '2'], ['new A'], { replace: true })
+    expect(ids).toEqual(['100'])
+    expect(history.map((m) => m.content)).toEqual(['chat', 'new A'])
+  })
+})

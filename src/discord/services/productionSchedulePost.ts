@@ -4,6 +4,7 @@ import configPromise from '@payload-config'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type TextChannel, type ThreadChannel } from 'discord.js'
 import { ensureDiscordClient, getDiscordClient } from '../bot'
 import { parseMessageIds, syncScheduleMessages } from '../handlers/publish-schedule'
+import { withKeyedLock } from '@/utilities/keyedLock'
 import {
   announceButtonLabel,
   buildSchedulePosts,
@@ -27,6 +28,11 @@ import {
 
 const GLOBAL_SLUG = 'production-dashboard' as const
 const REFRESH_DEBOUNCE_MS = 8_000
+/**
+ * Everything that writes the post queues on this. Each writer reads the message ids it will edit,
+ * so two running at once (a refresh and a lead pressing Post) both send and one copy is orphaned.
+ */
+const POST_LOCK = 'production-schedule-post'
 
 export interface SchedulePostChannels {
   staff: string | null
@@ -158,7 +164,7 @@ async function saveState(payload: Payload, state: SchedulePostState): Promise<vo
 }
 
 export interface PostScheduleArgs {
-  /** 'update' edits the messages on record; 'new' posts fresh ones and forgets the old. */
+  /** 'update' edits the messages on record; 'new' posts fresh ones and deletes the old. */
   mode: 'update' | 'new'
   postedBy?: string | null
 }
@@ -174,14 +180,19 @@ export interface PostScheduleResult {
  * Send or update both posts. Either channel may be unset, in which case that
  * post is skipped; at least one must be configured.
  */
-export async function postProductionSchedule(payload: Payload, { mode, postedBy }: PostScheduleArgs): Promise<PostScheduleResult> {
+export function postProductionSchedule(payload: Payload, args: PostScheduleArgs): Promise<PostScheduleResult> {
+  return withKeyedLock(POST_LOCK, () => writeProductionSchedule(payload, args))
+}
+
+async function writeProductionSchedule(payload: Payload, { mode, postedBy }: PostScheduleArgs): Promise<PostScheduleResult> {
   const build = await buildProductionSchedule(payload, 'discord', { keepPosted: mode === 'update' })
   if (!build.channels.staff && !build.channels.public) {
     throw new Error('No Discord channels configured for the broadcast schedule')
   }
 
-  const existing = mode === 'update' ? build.state : { ...build.state, staffMessageIds: [], publicMessageIds: [] }
-  const updated = mode === 'update' && (existing.staffMessageIds.length > 0 || existing.publicMessageIds.length > 0)
+  const { state } = build
+  const replace = mode === 'new'
+  const updated = mode === 'update' && (state.staffMessageIds.length > 0 || state.publicMessageIds.length > 0)
 
   let staffIds: string[] = []
   if (build.channels.staff) {
@@ -190,13 +201,15 @@ export async function postProductionSchedule(payload: Payload, { mode, postedBy 
       content,
       components: announceRows(build.posts.staffMatchIds[i] ?? [], build.matches),
     }))
-    staffIds = await syncScheduleMessages(channel, existing.staffMessageIds, staffMessages)
+    staffIds = await syncScheduleMessages(channel, state.staffMessageIds, staffMessages, { replace })
+    // Saved now: if the public post fails, the next run must not send these again.
+    await saveState(payload, { ...state, staffMessageIds: staffIds })
   }
 
   let publicIds: string[] = []
   if (build.channels.public) {
     const channel = await fetchTextChannel(build.channels.public)
-    publicIds = await syncScheduleMessages(channel, existing.publicMessageIds, build.posts.public)
+    publicIds = await syncScheduleMessages(channel, state.publicMessageIds, build.posts.public, { replace })
   }
 
   await saveState(payload, {
@@ -217,11 +230,13 @@ export async function postProductionSchedule(payload: Payload, { mode, postedBy 
 export async function refreshProductionSchedule(): Promise<void> {
   if (!getDiscordClient()) return
   const payload = await getPayload({ config: configPromise })
-  const global = await payload.findGlobal({ slug: GLOBAL_SLUG, depth: 0, overrideAccess: true })
-  const state = readState(global)
-  if (state.staffMessageIds.length === 0 && state.publicMessageIds.length === 0) return
-  const result = await postProductionSchedule(payload, { mode: 'update' })
-  console.log(`[ProductionSchedulePost] refreshed (${result.matchCount} matches)`)
+  await withKeyedLock(POST_LOCK, async () => {
+    const global = await payload.findGlobal({ slug: GLOBAL_SLUG, depth: 0, overrideAccess: true })
+    const state = readState(global)
+    if (state.staffMessageIds.length === 0 && state.publicMessageIds.length === 0) return
+    const result = await writeProductionSchedule(payload, { mode: 'update' })
+    console.log(`[ProductionSchedulePost] refreshed (${result.matchCount} matches)`)
+  })
 }
 
 let refreshTimer: NodeJS.Timeout | null = null
@@ -257,8 +272,8 @@ async function runRefresh(reason: string): Promise<void> {
 }
 
 /*
- * Weekly fresh post: from Monday 10:00 Eastern, a post left over from an earlier week is replaced
- * by new messages (as if a lead pressed Start a new week), so the schedule is the newest thing in
+ * Weekly fresh post: from Monday 10:00 Eastern, a post left over from an earlier week is deleted
+ * and replaced by new messages (as if a lead pressed Start a new week), so the schedule is the newest thing in
  * the announcements channel again. Only runs once someone has posted at least once, and waits
  * while no match is ticked for the new week rather than announcing an empty schedule.
  */
@@ -283,14 +298,16 @@ export async function runWeeklySchedulePostCheck(now: Date = new Date()): Promis
   refreshRunning = true
   try {
     const payload = await getPayload({ config: configPromise })
-    const global = await payload.findGlobal({ slug: GLOBAL_SLUG, depth: 0, overrideAccess: true })
-    const state = readState(global)
-    const firstId = state.staffMessageIds[0] ?? state.publicMessageIds[0]
-    if (!shouldStartNewWeek(firstId, now)) return
-    const build = await buildProductionSchedule(payload, 'discord', { keepPosted: false })
-    if (build.posts.matchIds.length === 0) return
-    const result = await postProductionSchedule(payload, { mode: 'new', postedBy: 'Weekly auto-post' })
-    console.log(`[ProductionSchedulePost] new week posted (${result.matchCount} matches)`)
+    await withKeyedLock(POST_LOCK, async () => {
+      const global = await payload.findGlobal({ slug: GLOBAL_SLUG, depth: 0, overrideAccess: true })
+      const state = readState(global)
+      const firstId = state.staffMessageIds[0] ?? state.publicMessageIds[0]
+      if (!shouldStartNewWeek(firstId, now)) return
+      const build = await buildProductionSchedule(payload, 'discord', { keepPosted: false })
+      if (build.posts.matchIds.length === 0) return
+      const result = await writeProductionSchedule(payload, { mode: 'new', postedBy: 'Weekly auto-post' })
+      console.log(`[ProductionSchedulePost] new week posted (${result.matchCount} matches)`)
+    })
   } catch (err) {
     console.error('[ProductionSchedulePost] weekly post failed:', (err as Error).message)
   } finally {

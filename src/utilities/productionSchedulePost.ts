@@ -324,11 +324,15 @@ function assignmentKey(match: ScheduleMatch): string {
   ].join('|')
 }
 
+/** By id, so a save that populates teams at a different depth than the stored doc is not a change. */
 function sideKey(match: ScheduleMatch): string {
-  const home = resolveHomeTeam(match)
   return [
-    home?.name ?? relId(match.team1Internal as any) ?? relId(match.team as any) ?? match.team1External ?? '',
-    opponentName(match),
+    relId(match.team1Internal as any),
+    relId(match.team as any),
+    match.team1External,
+    relId(match.team2Internal as any),
+    match.team2External,
+    match.opponent,
   ].join('|')
 }
 

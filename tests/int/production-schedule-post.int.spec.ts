@@ -217,6 +217,18 @@ describe('schedulePostRelevantChange', () => {
     expect(schedulePostRelevantChange(base, after)).toBe(true)
   })
 
+  it('stays quiet when only the populate depth differs, as on a FACEIT sync save', () => {
+    const populated = match({ team1Type: 'internal', team1Internal: { id: 7, name: 'Fairy' } } as any)
+    const bareId = match({ team1Type: 'internal', team1Internal: 7 } as any)
+    expect(schedulePostRelevantChange(populated, bareId)).toBe(false)
+    expect(schedulePostRelevantChange(match({ team2Type: 'internal', team2Internal: { id: 8, name: 'Dark' } } as any), match({ team2Type: 'internal', team2Internal: 8 } as any))).toBe(false)
+  })
+
+  it('fires when a side really changes', () => {
+    const before = match({ team1Type: 'internal', team1Internal: 7 } as any)
+    expect(schedulePostRelevantChange(match({ team1Type: 'internal', team1Internal: 9 } as any), before)).toBe(true)
+  })
+
   it('stays quiet for unrelated edits on a scheduled match', () => {
     expect(schedulePostRelevantChange(match({ title: 'Renamed' }), base)).toBe(false)
     const sameIds = match({
