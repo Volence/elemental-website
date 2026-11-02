@@ -245,10 +245,10 @@ export default function ProvisionTeamTab({ onAlert, serverId }: ProvisionTeamTab
                 <Hash size={10} /> {selectedTeam.name.toLowerCase()}-announcements
               </div>
               <div className="provision-preview__channel">
-                <MessageSquare size={10} /> {selectedTeam.name.toLowerCase()}-team-info
+                <MessageSquare size={10} /> {selectedTeam.name.toLowerCase()}-public-threads
               </div>
               <div className="provision-preview__channel">
-                <MessageSquare size={10} /> {selectedTeam.name.toLowerCase()}-coaching
+                <MessageSquare size={10} /> {selectedTeam.name.toLowerCase()}-private-threads
               </div>
               <div className="provision-preview__channel">
                 <Hash size={10} /> {selectedTeam.name.toLowerCase()}-private-chat

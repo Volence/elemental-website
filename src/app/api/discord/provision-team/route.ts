@@ -67,7 +67,7 @@ const CHANNEL_DEFS: Array<{
     },
   },
   {
-    nameTemplate: (n: string) => `📌・${n.toLowerCase()}-team-info`,
+    nameTemplate: (n: string) => `📌・${n.toLowerCase()}-public-threads`,
     type: ChannelType.GuildForum,
     // No exceptions - inherits all category defaults
     forumPosts: (n: string) => [
@@ -78,9 +78,9 @@ const CHANNEL_DEFS: Array<{
     ],
   },
   {
-    nameTemplate: (n: string) => `🎯・${n.toLowerCase()}-coaching`,
+    nameTemplate: (n: string) => `🎯・${n.toLowerCase()}-private-threads`,
     type: ChannelType.GuildForum,
-    // Exception: Access role can't see coaching
+    // Exception: Access role can't see private threads
     exceptions: {
       access: { deny: [PermissionFlagsBits.ViewChannel] },
     },
