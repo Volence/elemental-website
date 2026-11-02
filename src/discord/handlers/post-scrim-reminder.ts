@@ -4,6 +4,7 @@ import { ensureDiscordClient } from '../bot'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { EmbedBuilder, type TextChannel, type ThreadChannel } from 'discord.js'
+import { withoutTrialCoveredSlots } from './schedule-format'
 
 interface PlayerSlot {
   role: string
@@ -113,7 +114,7 @@ function createBlockEmbed(
 
   const getIds = (s: PlayerSlot) => s.playerIds?.length ? s.playerIds : s.playerId ? [s.playerId] : []
   // Optional Sub/Coach rows only appear when someone is on them.
-  const mainSlots = block.slots.filter(s =>
+  const mainSlots = withoutTrialCoveredSlots(block.slots).filter(s =>
     !s.isTrial && (!(s.role === 'Sub' || s.role === 'Coach') || getIds(s).length > 0 || (s.isRinger && s.ringerName)),
   )
   const trialSlots = block.slots.filter(s => s.isTrial)

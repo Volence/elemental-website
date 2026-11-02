@@ -68,6 +68,24 @@ function getPlayerIds(s: PlayerSlot): string[] {
   return s.playerIds?.length ? s.playerIds : s.playerId ? [s.playerId] : []
 }
 
+/**
+ * Drops the empty roster rows a trial is filling: a trial Tank means the Tank seat is taken, not
+ * open. Each trial player covers one empty row of their role, so a real gap still shows as "-".
+ */
+export function withoutTrialCoveredSlots<T extends PlayerSlot>(slots: T[]): T[] {
+  const covering = new Map<string, number>()
+  for (const s of slots) {
+    if (s.isTrial) covering.set(s.role, (covering.get(s.role) ?? 0) + getPlayerIds(s).length)
+  }
+  return slots.filter((s) => {
+    if (s.isTrial || s.isRinger || getPlayerIds(s).length > 0) return true
+    const left = covering.get(s.role) ?? 0
+    if (left === 0) return true
+    covering.set(s.role, left - 1)
+    return false
+  })
+}
+
 function formatBlock(day: DaySchedule, block: TimeBlock, index: number, blockCount: number, playerMap: Map<string, string>): string {
   const activity = getBlockActivity(block)
   const isScrimLike = activity === 'scrim' || activity === 'match' || activity === 'warmup'
@@ -93,7 +111,7 @@ function formatBlock(day: DaySchedule, block: TimeBlock, index: number, blockCou
   const isOptionalRole = (s: PlayerSlot) => s.role === 'Sub' || s.role === 'Coach'
   const isFilled = (s: PlayerSlot) =>
     getPlayerIds(s).length > 0 || (!!s.isRinger && !!s.ringerName && s.ringerName !== 'Ringer Needed')
-  const mainSlots = block.slots.filter(s => !s.isTrial && (!isOptionalRole(s) || isFilled(s)))
+  const mainSlots = withoutTrialCoveredSlots(block.slots).filter(s => !s.isTrial && (!isOptionalRole(s) || isFilled(s)))
   const trialSlots = block.slots.filter(s => s.isTrial)
   const coreSlots = mainSlots.filter(s => !isOptionalRole(s))
   const filledSlots = coreSlots.filter(isFilled)
