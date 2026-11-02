@@ -11,10 +11,12 @@ vi.mock('@payload-config', () => ({ default: {} }))
 
 import { postProductionSchedule } from '@/discord/services/productionSchedulePost'
 
+const snowflakeAt = (ms: number, n = 0) => String(((BigInt(ms) - 1420070400000n) << 22n) + BigInt(n))
+
 /** Discord with some latency, so overlapping writers really do overlap. */
 function fakeChannel() {
   const history: Array<{ id: string; content: string }> = []
-  let nextId = 1
+  let nextId = 0
   const toMessage = (entry: { id: string; content: string }) => ({
     id: entry.id,
     edit: async (next: any) => {
@@ -29,7 +31,7 @@ function fakeChannel() {
     history,
     send: async (next: any) => {
       await new Promise((r) => setTimeout(r, 5))
-      const entry = { id: String(nextId++), content: typeof next === 'string' ? next : next.content }
+      const entry = { id: snowflakeAt(Date.now(), nextId++), content: typeof next === 'string' ? next : next.content }
       history.push(entry)
       return toMessage(entry)
     },
@@ -84,7 +86,18 @@ describe('postProductionSchedule', () => {
     expect(channels.get('public').history).toHaveLength(1)
   })
 
-  it('replaces the previous post when a new week starts', async () => {
+  it('keeps the earlier post for reference when a new week starts', async () => {
+    const payload = fakePayload()
+    const oldId = snowflakeAt(Date.now() - 3 * 24 * 60 * 60 * 1000)
+    channels.get('staff').history.push({ id: oldId, content: 'last week' })
+    channels.get('public').history.push({ id: oldId, content: 'last week' })
+    await payload.updateGlobal({ data: { schedulePost: { staffMessageIds: oldId, publicMessageIds: oldId } } })
+    await postProductionSchedule(payload, { mode: 'new' })
+    expect(channels.get('staff').history).toHaveLength(2)
+    expect(channels.get('public').history).toHaveLength(2)
+  })
+
+  it('does not stack copies when a new week follows a post from moments ago', async () => {
     const payload = fakePayload()
     await postProductionSchedule(payload, { mode: 'new' })
     await postProductionSchedule(payload, { mode: 'new' })

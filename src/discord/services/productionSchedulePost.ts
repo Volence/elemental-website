@@ -8,6 +8,7 @@ import { withKeyedLock } from '@/utilities/keyedLock'
 import {
   announceButtonLabel,
   buildSchedulePosts,
+  postIsMomentsOld,
   scheduleMatchesWhere,
   shouldStartNewWeek,
   type MentionStyle,
@@ -164,7 +165,7 @@ async function saveState(payload: Payload, state: SchedulePostState): Promise<vo
 }
 
 export interface PostScheduleArgs {
-  /** 'update' edits the messages on record; 'new' posts fresh ones and deletes the old. */
+  /** 'update' edits the messages on record; 'new' posts fresh ones and leaves the old for reference. */
   mode: 'update' | 'new'
   postedBy?: string | null
 }
@@ -192,6 +193,9 @@ async function writeProductionSchedule(payload: Payload, { mode, postedBy }: Pos
 
   const { state } = build
   const replace = mode === 'new'
+  // A new post leaves the old one in the channel, unless that one only went out moments ago
+  // (a refresh that resent the post just before a lead pressed the button).
+  const carried = (ids: string[]) => (replace && !postIsMomentsOld(ids[0]) ? [] : ids)
   const updated = mode === 'update' && (state.staffMessageIds.length > 0 || state.publicMessageIds.length > 0)
 
   let staffIds: string[] = []
@@ -201,7 +205,7 @@ async function writeProductionSchedule(payload: Payload, { mode, postedBy }: Pos
       content,
       components: announceRows(build.posts.staffMatchIds[i] ?? [], build.matches),
     }))
-    staffIds = await syncScheduleMessages(channel, state.staffMessageIds, staffMessages, { replace })
+    staffIds = await syncScheduleMessages(channel, carried(state.staffMessageIds), staffMessages, { replace })
     // Saved now: if the public post fails, the next run must not send these again.
     await saveState(payload, { ...state, staffMessageIds: staffIds })
   }
@@ -209,7 +213,7 @@ async function writeProductionSchedule(payload: Payload, { mode, postedBy }: Pos
   let publicIds: string[] = []
   if (build.channels.public) {
     const channel = await fetchTextChannel(build.channels.public)
-    publicIds = await syncScheduleMessages(channel, state.publicMessageIds, build.posts.public, { replace })
+    publicIds = await syncScheduleMessages(channel, carried(state.publicMessageIds), build.posts.public, { replace })
   }
 
   await saveState(payload, {
@@ -272,8 +276,8 @@ async function runRefresh(reason: string): Promise<void> {
 }
 
 /*
- * Weekly fresh post: from Monday 10:00 Eastern, a post left over from an earlier week is deleted
- * and replaced by new messages (as if a lead pressed Start a new week), so the schedule is the newest thing in
+ * Weekly fresh post: from Monday 10:00 Eastern, a post left over from an earlier week is replaced
+ * by new messages (as if a lead pressed Start a new week), so the schedule is the newest thing in
  * the announcements channel again. Only runs once someone has posted at least once, and waits
  * while no match is ticked for the new week rather than announcing an empty schedule.
  */

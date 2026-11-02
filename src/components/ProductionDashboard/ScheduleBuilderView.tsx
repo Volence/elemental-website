@@ -337,8 +337,8 @@ export function ScheduleBuilderView() {
         </p>
         {hasPost ? (
           <p>
-            <strong>Update current post</strong> edits the messages already in Discord. <strong>Start a new week</strong> deletes them
-            and posts fresh messages, which the schedule then follows from here on.
+            <strong>Update current post</strong> edits the messages already in Discord. <strong>Start a new week</strong> leaves them
+            alone and posts fresh messages, which the schedule then follows from here on.
           </p>
         ) : (
           <p>After the first post, changes to these matches update the Discord messages automatically.</p>

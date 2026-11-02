@@ -398,6 +398,7 @@ export function formatStreamAnnouncement(match: ScheduleMatch, streamUrl: string
 const WEEK_TIMEZONE = 'America/New_York'
 export const NEW_WEEK_TIME = '10:00'
 const DISCORD_EPOCH = 1420070400000n
+const JUST_SENT_MS = 2 * 60 * 1000
 
 export function snowflakeTime(id: string): Date {
   return new Date(Number((BigInt(id) >> 22n) + DISCORD_EPOCH))
@@ -418,6 +419,11 @@ function mondayKey(date: Date): string {
   const monday = new Date(`${dateKey}T00:00:00Z`)
   monday.setUTCDate(monday.getUTCDate() - ((weekday + 6) % 7))
   return monday.toISOString().slice(0, 10)
+}
+
+/** Sent moments ago, so a new post right after it would just be a second copy. */
+export function postIsMomentsOld(firstMessageId: string | undefined, now: Date = new Date()): boolean {
+  return !!firstMessageId && now.getTime() - snowflakeTime(firstMessageId).getTime() < JUST_SENT_MS
 }
 
 export function postIsFromEarlierWeek(firstMessageId: string, now: Date = new Date()): boolean {
