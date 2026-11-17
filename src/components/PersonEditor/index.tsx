@@ -327,11 +327,16 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         payload.slug = slug
         // Accept a pasted mention (<@123...>) or stray spaces; anything else that is not an ID
         // is caught here with a clear message rather than a generic server error.
+        // Only sent when it changed, so a role or title edit can never be blocked by this box
+        // (a browser autofill once put text in it and stopped an unrelated save).
         const cleanDiscordId = discordId.trim().replace(/^<@!?(\d+)>$/, '$1')
-        if (cleanDiscordId && !/^\d{17,19}$/.test(cleanDiscordId)) {
-          throw new Error('Discord ID must be the 17-19 digit number (Discord: right-click the user > Copy User ID), not a username. Leave it empty if unknown.')
+        const storedDiscordId = String((person as any)?.discordId ?? '')
+        if (cleanDiscordId !== storedDiscordId) {
+          if (cleanDiscordId && !/^\d{17,19}$/.test(cleanDiscordId)) {
+            throw new Error(`Discord ID was changed to "${cleanDiscordId}". It must be the 17-19 digit number (Discord: right-click the user > Copy User ID), not a username. Put back ${storedDiscordId || 'an empty box'} or the correct number.`)
+          }
+          payload.discordId = cleanDiscordId || null
         }
-        payload.discordId = cleanDiscordId || null
         payload.showInLiveStreamers = liveRosterApproved
         payload.gameAliases = gameAliases.filter(a => a.alias.trim())
         payload.notes = notes || null
@@ -391,7 +396,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
 
       // Update local person state with saved name for header display
       if (isManager && person) {
-        setPerson({ ...person, name, slug })
+        setPerson({ ...person, name, slug, ...('discordId' in payload ? { discordId: payload.discordId } : {}) })
       }
       setInitialTitles(titles)
       setInitialTeamAccess(teamAccess)
@@ -893,7 +898,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
               <div style={styles.editableField}>
                 <label style={styles.fieldLabel}>Email</label>
                 {isAdmin ? (
-                  <input className="profile-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" />
+                  <input className="profile-input" type="email" autoComplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" />
                 ) : (
                   <span style={{ ...styles.readonlyValue, padding: '10px 0' }}>{email}</span>
                 )}
@@ -925,6 +930,8 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                     <input
                       className="profile-input"
                       type="password"
+                      autoComplete="new-password"
+                      data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new password..."
@@ -963,11 +970,11 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
               <>
                 <div style={styles.editableField}>
                   <label style={styles.fieldLabel}>Slug</label>
-                  <input className="profile-input" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="auto-generated-slug" />
+                  <input className="profile-input" autoComplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="auto-generated-slug" />
                 </div>
                 <div style={styles.editableField}>
                   <label style={styles.fieldLabel}>Discord ID</label>
-                  <input className="profile-input" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID (not a username)" />
+                  <input className="profile-input" autoComplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID (not a username)" />
                 </div>
                 <div style={{ ...styles.readonlyField, justifyContent: 'space-between' }}>
                   <div>
